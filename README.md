@@ -1,50 +1,50 @@
 # Web Content Chunker
 
-A Node.js script that extracts and structures content from web pages into JSON chunks.
+A modern web application that extracts and structures content from web pages into clean, organized JSON chunks. Built with Search Influence branding for professional content analysis and SEO research.
+
+🔗 **Live App**: [https://getchunks.vercel.app](https://getchunks.vercel.app)
 
 ## Features
 
-- Extracts content by heading hierarchy (H1-H6)
-- Removes HTML tags and formatting
-- Groups related content logically
-- Avoids content duplication
-- Outputs clean, structured JSON
-- Handles lists, paragraphs, and blockquotes
-- Filters out navigation, footer, and social media content
+- **🎯 Smart Content Extraction**: Automatically identifies and extracts meaningful content based on heading hierarchy
+- **🧹 Clean, Structured Output**: Removes HTML tags, normalizes formatting, and eliminates duplicate content
+- **⚡ Fast Serverless Processing**: Powered by Vercel edge functions for lightning-fast processing
+- **📖 Multiple View Modes**: Webpage view, structured chunks view, and raw JSON output
+- **📋 Easy Export**: Copy to clipboard or download JSON files
+- **📱 Responsive Design**: Works perfectly on desktop and mobile devices
+- **🔄 Real-time Processing**: No rate limits or infrastructure concerns
 
-## Installation
+## How to Use
 
-```bash
-npm install
-```
+1. **Visit the web app**: [https://getchunks.vercel.app](https://getchunks.vercel.app)
+2. **Enter any public URL** in the input field
+3. **Click "Extract Content"** to process the page
+4. **Choose your view**:
+   - **📖 Webpage**: Clean, article-style presentation
+   - **🧩 Chunks**: Structured view showing big chunks and small chunks
+   - **📋 JSON**: Raw JSON data for developers
 
-## Usage
+## Content Processing
 
-```bash
-node chunk.js <URL> > output.json
-```
+### What Gets Extracted
+- Main article content organized by headings (H1-H6)
+- Paragraphs and text content
+- Lists (formatted as markdown-style bullets)
+- Blockquotes (prefixed with `>`)
+- Structured content hierarchy
 
-## Examples
-
-```bash
-# Basic usage
-node chunk.js https://example.com > page-chunks.json
-
-# Process a blog post
-node chunk.js https://www.searchinfluence.com/blog/seo-automation/ > blog-chunks.json
-
-# View output in terminal
-node chunk.js https://example.com | jq '.'
-```
-
-## Dependencies
-
-- node-fetch - For fetching web page content
-- cheerio - For HTML parsing and manipulation
+### What Gets Filtered Out
+- Navigation menus and headers
+- Footer content and links
+- Social media buttons and share widgets
+- Advertisements and sidebar content
+- HTML tags and formatting
+- Empty or very short content
+- Duplicate content across sections
 
 ## Output Format
 
-The script outputs JSON with the following structure:
+The application generates JSON with this structure:
 
 ```json
 {
@@ -61,7 +61,7 @@ The script outputs JSON with the following structure:
     },
     {
       "big_chunk_index": 2,
-      "title": "Section Heading",
+      "title": "Section Heading", 
       "level": 2,
       "small_chunks": [
         "Section content goes here.",
@@ -72,56 +72,84 @@ The script outputs JSON with the following structure:
 }
 ```
 
-## How It Works
+## Use Cases
 
-1. **Fetches Content**: Downloads the HTML from the provided URL
-2. **Parses Structure**: Uses Cheerio to parse and navigate the HTML DOM
-3. **Identifies Headings**: Finds H1-H6 elements to create content boundaries
-4. **Extracts Content**: Collects paragraphs, lists, and other content following each heading
-5. **Cleans Text**: Removes HTML tags, normalizes whitespace, and filters noise
-6. **Prevents Duplication**: Ensures content doesn't appear in multiple chunks
-7. **Structures Output**: Creates hierarchical JSON with numbered chunks
+- **SEO Research**: Analyze competitor content structure and organization
+- **Content Analysis**: Extract and study content patterns from websites
+- **Data Processing**: Convert web content into structured data for analysis
+- **Content Migration**: Extract content for CMS migrations or restructuring
+- **Research**: Gather and organize information from multiple web sources
 
-## Content Processing
+## Technology Stack
 
-### What Gets Included
-- Main article content under headings
-- Paragraphs and text content
-- Lists (formatted as markdown-style bullets)
-- Blockquotes (prefixed with `>`)
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Backend**: Node.js serverless functions (Vercel)
+- **Processing**: Cheerio for HTML parsing, node-fetch for content retrieval
+- **Deployment**: Vercel edge network for global performance
+- **Styling**: Search Influence branding and responsive design
 
-### What Gets Filtered Out
-- Navigation menus
-- Footer content
-- Social media links and share buttons
-- HTML tags and formatting
-- Empty or very short content
-- Duplicate content
+## Local Development
 
-### Heading Hierarchy
-- **H1**: Main article title and introduction
-- **H2**: Major sections (each becomes a separate chunk)
-- **H3-H6**: Subsections (grouped under parent sections)
+If you want to run this locally or contribute:
+
+```bash
+# Clone the repository
+git clone https://github.com/willscott-v2/getchunks.git
+cd getchunks
+
+# Install dependencies
+npm install
+
+# Run development server
+vercel dev
+
+# Open http://localhost:3000
+```
+
+## API Usage
+
+You can also use the extraction API directly:
+
+```bash
+# POST request to extract content
+curl -X POST https://getchunks.vercel.app/api/chunk \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com"}'
+```
 
 ## Error Handling
 
-The script includes basic error handling for:
-- Invalid URLs
-- Network timeouts
-- Malformed HTML
-- Missing content
+The application includes robust error handling for:
+- Invalid URLs and malformed requests
+- Network timeouts and connection issues
+- Protected or authentication-required pages
+- Malformed HTML and parsing errors
+- Rate limiting and server errors
 
 ## Limitations
 
-- Requires public URLs (no authentication)
-- JavaScript-rendered content may not be captured
-- Very large pages may take time to process
-- Some complex layouts may not parse perfectly
+- **Public URLs only**: Cannot access password-protected or private content
+- **JavaScript rendering**: May not capture dynamically generated content
+- **Large pages**: Very large pages may take longer to process
+- **Complex layouts**: Some highly customized layouts may not parse perfectly
 
 ## Contributing
 
-Feel free to submit issues and enhancement requests!
+We welcome contributions! Feel free to:
+- Submit bug reports and feature requests
+- Improve the extraction algorithms
+- Enhance the user interface
+- Add new export formats
+- Improve documentation
 
 ## License
 
-ISC
+ISC License - free to use and modify
+
+## Credits
+
+Built by [Search Influence](https://www.searchinfluence.com) - AI-driven SEO and digital marketing experts.
+
+---
+
+**Need help with SEO or content strategy?** [Contact Search Influence](https://www.searchinfluence.com/contact/) for professional digital marketing services.
