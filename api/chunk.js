@@ -126,17 +126,16 @@ async function chunkUrl(url) {
     }
   }
 
-  // Debug: Log all headings found
-  console.log('=== HEADING ANALYSIS ===');
+  // Debug: Log all headings found and include in response
+  const headingAnalysis = [];
   $('h1, h2, h3, h4, h5, h6').each((i, heading) => {
     const $h = $(heading);
     if (!isInNavOrFooter(heading)) {
       const title = cleanText($h.text());
       const level = Number(heading.tagName.charAt(1));
-      console.log(`Found H${level}: "${title}"`);
+      headingAnalysis.push(`H${level}: "${title}"`);
     }
   });
-  console.log('=== END HEADING ANALYSIS ===');
 
   // Now process H2+ headings only
   $('h2, h3, h4, h5, h6').each((i, heading) => {
@@ -239,5 +238,8 @@ async function chunkUrl(url) {
     chunk.big_chunk_index = index + 1;
   });
 
-  return { big_chunks: cleanedChunks };
+  return { 
+    big_chunks: cleanedChunks,
+    debug_headings: headingAnalysis 
+  };
 }
