@@ -783,6 +783,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Vercel Analytics
+            if (typeof window !== 'undefined') {
+                import('https://cdn.jsdelivr.net/npm/@vercel/analytics@1/dist/index.js').then(({ inject }) => {
+                    inject();
+                });
+            }
+
             const form = document.getElementById('chunker-form');
             const urlInput = document.getElementById('url-input');
             const extractButton = document.getElementById('extract-button');
@@ -828,6 +835,11 @@
             });
 
             function showWebpageView() {
+                // Track view change
+                if (window.va) {
+                    window.va.track('view_changed', { view: 'webpage' });
+                }
+                
                 webpageView.classList.add('show');
                 webpageView.style.display = 'block'; // Force show
                 chunksView.classList.remove('show');
@@ -842,6 +854,11 @@
                 console.log('Switching to chunks view'); // Debug log
                 console.log('chunksView element before changes:', chunksView);
                 console.log('chunksView current style.display:', chunksView.style.display);
+                
+                // Track view change
+                if (window.va) {
+                    window.va.track('view_changed', { view: 'chunks' });
+                }
                 
                 webpageView.classList.remove('show');
                 webpageView.style.display = 'none'; // Force hide
@@ -864,6 +881,11 @@
             }
 
             function showJsonView() {
+                // Track view change
+                if (window.va) {
+                    window.va.track('view_changed', { view: 'json' });
+                }
+                
                 webpageView.classList.remove('show');
                 webpageView.style.display = 'none'; // Force hide
                 chunksView.classList.remove('show');
@@ -899,6 +921,14 @@
                     if (data.success) {
                         currentData = data.data;
                         displayResults(data.data);
+                        
+                        // Track successful content extraction
+                        if (window.va) {
+                            window.va.track('content_extracted', {
+                                url: url,
+                                chunks_count: data.data.big_chunks?.length || 0
+                            });
+                        }
                     } else {
                         showError(data.error || 'An error occurred while processing the URL');
                     }
@@ -914,6 +944,11 @@
             // Copy JSON to clipboard
             document.getElementById('copy-json').addEventListener('click', async function() {
                 if (!currentData) return;
+                
+                // Track copy action
+                if (window.va) {
+                    window.va.track('json_copied');
+                }
                 
                 try {
                     await navigator.clipboard.writeText(JSON.stringify(currentData, null, 2));
@@ -941,6 +976,11 @@
             // Download JSON file
             document.getElementById('download-json').addEventListener('click', function() {
                 if (!currentData) return;
+                
+                // Track download action
+                if (window.va) {
+                    window.va.track('json_downloaded');
+                }
                 
                 const blob = new Blob([JSON.stringify(currentData, null, 2)], { 
                     type: 'application/json' 
