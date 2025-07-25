@@ -1,53 +1,92 @@
-// chunk.js - Clean version matching Dejan's approach
 import fetch from 'node-fetch';
 import { load } from 'cheerio';
 
-async function chunk(url) {
-  const res = await fetch(url);
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { url } = req.body;
+
+  if (!url) {
+    return res.status(400).json({ error: 'URL is required' });
+  }
+
+  try {
+    new URL(url);
+  } catch (error) {
+    return res.status(400).json({ error: 'Invalid URL format' });
+  }
+
+  try {
+    const chunks = await chunkUrl(url);
+    res.status(200).json({ success: true, data: chunks });
+  } catch (error) {
+    console.error('Chunking error:', error);
+    res.status(500).json({ 
+      error: 'Failed to process URL', 
+      details: error.message 
+    });
+  }
+}
+
+async function chunkUrl(url) {
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Web Content Chunker/1.0'
+    },
+    timeout: 30000
+  });
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  }
+
   const html = await res.text();
   const $ = load(html);
 
   const bigChunks = [];
+  const globalSeen = new Set();
 
-  // Clean text function - removes HTML and normalizes whitespace
   function cleanText(text) {
     return text
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/\s+/g, ' ')     // Normalize whitespace
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
       .trim();
   }
 
-  // Check if element is inside nav or footer
   function isInNavOrFooter(element) {
     return $(element).closest('nav, footer').length > 0;
   }
 
-  // Skip common elements we don't want
   function shouldSkip(text) {
     const skipPatterns = [
-      /^\s*$/,                    // Empty or whitespace only
-      /^(facebook|twitter|instagram|linkedin)$/i, // Social media
-      /^\d+share/,                // Share counters
-      /^comments off/i,           // Comment indicators
-      /^<img/,                    // Image tags
-      /^\s*\d+\s*$/,             // Just numbers
-      /^(facebook twitter pinterest linkedin)$/i, // Social media groups
-      /privacy policy$/i          // Privacy policy links
+      /^\s*$/,
+      /^(facebook|twitter|instagram|linkedin)$/i,
+      /^\d+share/,
+      /^comments off/i,
+      /^<img/,
+      /^\s*\d+\s*$/,
+      /^(facebook twitter pinterest linkedin)$/i,
+      /privacy policy$/i
     ];
     return skipPatterns.some(pattern => pattern.test(text));
   }
 
-  // Track global content to avoid duplication
-  const globalSeen = new Set();
-
-  // First, create the main intro chunk if we find a primary heading
   const mainHeading = $('h1').first();
   if (mainHeading.length && !isInNavOrFooter(mainHeading[0])) {
     const title = cleanText(mainHeading.text());
     const contents = [];
     const seen = new Set();
 
-    // Get content until first h2
     let current = mainHeading.next();
     while (current.length) {
       if (current.is('h2')) break;
@@ -87,11 +126,9 @@ async function chunk(url) {
     }
   }
 
-  // Now process H2+ headings only
   $('h2, h3, h4, h5, h6').each((i, heading) => {
     const $h = $(heading);
     
-    // Skip headings in nav/footer
     if (isInNavOrFooter(heading)) return;
 
     const title = cleanText($h.text());
@@ -101,15 +138,14 @@ async function chunk(url) {
     const contents = [];
     const seen = new Set();
 
-    // Process the content following this heading
     let current = $h.next();
     while (current.length) {
       const tagName = current[0].tagName;
       
-      // Stop at next heading of same or higher level
       if (/^H[1-6]$/.test(tagName)) {
         const currentLevel = Number(tagName.charAt(1));
-        if (currentLevel <= level) break;
+        if (level === 2 && currentLevel === 2) break;
+        if (level > 2 && currentLevel <= level) break;
       }
 
       let text = '';
@@ -117,7 +153,6 @@ async function chunk(url) {
       if (current.is('p, div')) {
         text = cleanText(current.text());
       } else if (current.is('ul, ol')) {
-        // Process lists as markdown-style bullets
         const listItems = [];
         current.find('li').each((_, li) => {
           const liText = cleanText($(li).text());
@@ -133,8 +168,7 @@ async function chunk(url) {
         if (text) text = `> ${text}`;
       }
 
-      // Add content if it's substantial, not duplicate, and not already used
-      if (text && text.length > 10 && !seen.has(text) && !globalSeen.has(text) && !shouldSkip(text)) {
+      if (text && text.length > 15 && !seen.has(text) && !globalSeen.has(text) && !shouldSkip(text)) {
         contents.push(text);
         seen.add(text);
         globalSeen.add(text);
@@ -143,7 +177,6 @@ async function chunk(url) {
       current = current.next();
     }
 
-    // Only create chunk if we have good content
     if (contents.length > 0) {
       bigChunks.push({
         big_chunk_index: bigChunks.length + 1,
@@ -154,8 +187,6 @@ async function chunk(url) {
     }
   });
 
-  // If we didn't capture much content, try a different approach
-  // Look for the main content area and extract paragraphs
   if (bigChunks.length === 0) {
     const mainContent = $('main, article, .content, .post-content, .entry-content').first();
     if (mainContent.length) {
@@ -181,7 +212,6 @@ async function chunk(url) {
     }
   }
 
-  // Final cleanup - remove any remaining duplicates and small chunks
   const cleanedChunks = bigChunks
     .filter(chunk => chunk.small_chunks.length > 0)
     .map(chunk => ({
@@ -192,19 +222,9 @@ async function chunk(url) {
     }))
     .filter(chunk => chunk.small_chunks.length > 0);
 
-  // Re-index
   cleanedChunks.forEach((chunk, index) => {
     chunk.big_chunk_index = index + 1;
   });
 
-  // Output JSON
-  console.log(JSON.stringify({ big_chunks: cleanedChunks }, null, 2));
-}
-
-// Usage: node chunk.js <URL> > page-chunks.json
-if (process.argv[2]) {
-  chunk(process.argv[2]);
-} else {
-  console.error('Please provide a URL as an argument');
-  process.exit(1);
+  return { big_chunks: cleanedChunks };
 }

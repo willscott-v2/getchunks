@@ -52,3 +52,4 @@ temp/
 *.backup
 *~
 EOF
+.vercel

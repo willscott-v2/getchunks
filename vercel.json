@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/chunk.js": {
+      "maxDuration": 30
+    }
+  }
+}
