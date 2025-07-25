@@ -781,15 +781,14 @@
         </div>
     </div>
 
+    <!-- Vercel Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Vercel Analytics
-            if (typeof window !== 'undefined') {
-                import('https://cdn.jsdelivr.net/npm/@vercel/analytics@1/dist/index.js').then(({ inject }) => {
-                    inject();
-                });
-            }
-
             const form = document.getElementById('chunker-form');
             const urlInput = document.getElementById('url-input');
             const extractButton = document.getElementById('extract-button');
