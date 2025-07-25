@@ -126,6 +126,19 @@ async function chunkUrl(url) {
     }
   }
 
+  // Debug: Log all headings found
+  console.log('=== HEADING ANALYSIS ===');
+  $('h1, h2, h3, h4, h5, h6').each((i, heading) => {
+    const $h = $(heading);
+    if (!isInNavOrFooter(heading)) {
+      const title = cleanText($h.text());
+      const level = Number(heading.tagName.charAt(1));
+      console.log(`Found H${level}: "${title}"`);
+    }
+  });
+  console.log('=== END HEADING ANALYSIS ===');
+
+  // Now process H2+ headings only
   $('h2, h3, h4, h5, h6').each((i, heading) => {
     const $h = $(heading);
     
@@ -150,7 +163,7 @@ async function chunkUrl(url) {
 
       let text = '';
       
-      if (current.is('p, div')) {
+      if (current.is('p, div, section, article')) {
         text = cleanText(current.text());
       } else if (current.is('ul, ol')) {
         const listItems = [];
