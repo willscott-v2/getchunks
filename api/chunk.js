@@ -1,3 +1,5 @@
+// Web Content Chunker API v1.2.0
+// Built by Search Influence - Last Updated: July 25, 2025
 import fetch from 'node-fetch';
 import { load } from 'cheerio';
 
@@ -137,27 +139,41 @@ async function chunkUrl(url) {
     }
   });
 
-  // Now process H2+ headings only
-  $('h2, h3, h4, h5, h6').each((i, heading) => {
+  // Alternative approach: Find all headings first, then process content between them
+  const headings = [];
+  $('h1, h2, h3, h4, h5, h6').each((i, heading) => {
     const $h = $(heading);
-    
-    if (isInNavOrFooter(heading)) return;
+    if (!isInNavOrFooter(heading)) {
+      const title = cleanText($h.text());
+      if (title && title.length >= 3) {
+        headings.push({
+          element: $h,
+          title: title,
+          level: Number(heading.tagName.charAt(1)),
+          index: i
+        });
+      }
+    }
+  });
 
-    const title = cleanText($h.text());
-    if (!title || title.length < 3) return;
-
-    const level = Number(heading.tagName.charAt(1));
+  // Process each heading and get content until next heading
+  headings.forEach((heading, idx) => {
     const contents = [];
     const seen = new Set();
-
-    let current = $h.next();
+    
+    // Get content between this heading and the next heading
+    const nextHeading = headings[idx + 1];
+    let current = heading.element.next();
+    
     while (current.length) {
-      const tagName = current[0].tagName;
+      // Stop if we've reached the next heading
+      if (nextHeading && current[0] === nextHeading.element[0]) {
+        break;
+      }
       
-      if (/^H[1-6]$/.test(tagName)) {
-        const currentLevel = Number(tagName.charAt(1));
-        // Stop at any heading of same or higher level
-        if (currentLevel <= level) break;
+      // Stop if we encounter ANY heading that's not this one
+      if (current.is('h1, h2, h3, h4, h5, h6') && current[0] !== heading.element[0]) {
+        break;
       }
 
       let text = '';
@@ -192,8 +208,8 @@ async function chunkUrl(url) {
     if (contents.length > 0) {
       bigChunks.push({
         big_chunk_index: bigChunks.length + 1,
-        title,
-        level,
+        title: heading.title,
+        level: heading.level,
         small_chunks: contents
       });
     }
