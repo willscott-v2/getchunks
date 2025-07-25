@@ -789,6 +789,20 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Helper function to safely track events
+            function trackEvent(eventName, properties = {}) {
+                if (window.va && typeof window.va.track === 'function') {
+                    window.va.track(eventName, properties);
+                } else {
+                    // Queue the event for when analytics loads
+                    setTimeout(() => {
+                        if (window.va && typeof window.va.track === 'function') {
+                            window.va.track(eventName, properties);
+                        }
+                    }, 1000);
+                }
+            }
+
             const form = document.getElementById('chunker-form');
             const urlInput = document.getElementById('url-input');
             const extractButton = document.getElementById('extract-button');
@@ -835,9 +849,7 @@
 
             function showWebpageView() {
                 // Track view change
-                if (window.va) {
-                    window.va.track('view_changed', { view: 'webpage' });
-                }
+                trackEvent('view_changed', { view: 'webpage' });
                 
                 webpageView.classList.add('show');
                 webpageView.style.display = 'block'; // Force show
@@ -855,9 +867,7 @@
                 console.log('chunksView current style.display:', chunksView.style.display);
                 
                 // Track view change
-                if (window.va) {
-                    window.va.track('view_changed', { view: 'chunks' });
-                }
+                trackEvent('view_changed', { view: 'chunks' });
                 
                 webpageView.classList.remove('show');
                 webpageView.style.display = 'none'; // Force hide
@@ -881,9 +891,7 @@
 
             function showJsonView() {
                 // Track view change
-                if (window.va) {
-                    window.va.track('view_changed', { view: 'json' });
-                }
+                trackEvent('view_changed', { view: 'json' });
                 
                 webpageView.classList.remove('show');
                 webpageView.style.display = 'none'; // Force hide
@@ -922,12 +930,10 @@
                         displayResults(data.data);
                         
                         // Track successful content extraction
-                        if (window.va) {
-                            window.va.track('content_extracted', {
-                                url: url,
-                                chunks_count: data.data.big_chunks?.length || 0
-                            });
-                        }
+                        trackEvent('content_extracted', {
+                            url: url,
+                            chunks_count: data.data.big_chunks?.length || 0
+                        });
                     } else {
                         showError(data.error || 'An error occurred while processing the URL');
                     }
@@ -945,9 +951,7 @@
                 if (!currentData) return;
                 
                 // Track copy action
-                if (window.va) {
-                    window.va.track('json_copied');
-                }
+                trackEvent('json_copied');
                 
                 try {
                     await navigator.clipboard.writeText(JSON.stringify(currentData, null, 2));
@@ -977,9 +981,7 @@
                 if (!currentData) return;
                 
                 // Track download action
-                if (window.va) {
-                    window.va.track('json_downloaded');
-                }
+                trackEvent('json_downloaded');
                 
                 const blob = new Blob([JSON.stringify(currentData, null, 2)], { 
                     type: 'application/json' 
