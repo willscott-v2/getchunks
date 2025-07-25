@@ -144,8 +144,8 @@ async function chunkUrl(url) {
       
       if (/^H[1-6]$/.test(tagName)) {
         const currentLevel = Number(tagName.charAt(1));
-        if (level === 2 && currentLevel === 2) break;
-        if (level > 2 && currentLevel <= level) break;
+        // Stop at any heading of same or higher level
+        if (currentLevel <= level) break;
       }
 
       let text = '';
