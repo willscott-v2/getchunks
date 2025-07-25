@@ -1,4 +1,4 @@
-# Web Content Chunker
+# Web Content Chunker v1.2.0
 
 A modern web application that extracts and structures content from web pages into clean, organized JSON chunks. Built with Search Influence branding for professional content analysis and SEO research.
 
@@ -9,10 +9,15 @@ A modern web application that extracts and structures content from web pages int
 - **🎯 Smart Content Extraction**: Automatically identifies and extracts meaningful content based on heading hierarchy
 - **🧹 Clean, Structured Output**: Removes HTML tags, normalizes formatting, and eliminates duplicate content
 - **⚡ Fast Serverless Processing**: Powered by Vercel edge functions for lightning-fast processing
-- **📖 Multiple View Modes**: Webpage view, structured chunks view, and raw JSON output
+- **📖 Multiple View Modes**: 
+  - **Webpage View**: Clean, article-style presentation for easy reading
+  - **Chunks View**: Structured display showing big chunks and numbered small chunks
+  - **JSON View**: Raw JSON data for developers and technical analysis
 - **📋 Easy Export**: Copy to clipboard or download JSON files
 - **📱 Responsive Design**: Works perfectly on desktop and mobile devices
 - **🔄 Real-time Processing**: No rate limits or infrastructure concerns
+- **📊 Analytics Tracking**: Built-in Vercel Analytics for usage insights
+- **🎨 Professional Branding**: Search Influence branded interface
 
 ## How to Use
 
@@ -24,7 +29,14 @@ A modern web application that extracts and structures content from web pages int
    - **🧩 Chunks**: Structured view showing big chunks and small chunks
    - **📋 JSON**: Raw JSON data for developers
 
-## Content Processing
+## Recent Updates (v1.2.0)
+
+- ✅ **Enhanced Chunking Algorithm**: Improved content separation between headings
+- ✅ **Three-View Interface**: Added dedicated Chunks view alongside Webpage and JSON views
+- ✅ **Search Influence Branding**: Professional header with official logo and styling
+- ✅ **Analytics Integration**: Vercel Analytics with custom event tracking
+- ✅ **Version Tracking**: Added version comments to all files for better debugging
+- ✅ **Improved Error Handling**: Better error messages and debugging capabilities
 
 ### What Gets Extracted
 - Main article content organized by headings (H1-H6)
@@ -136,11 +148,18 @@ The application includes robust error handling for:
 ## Contributing
 
 We welcome contributions! Feel free to:
-- Submit bug reports and feature requests
-- Improve the extraction algorithms
-- Enhance the user interface
-- Add new export formats
-- Improve documentation
+- Submit bug reports and feature requests via GitHub Issues
+- Improve the extraction algorithms for better content detection
+- Enhance the user interface and user experience
+- Add new export formats (CSV, XML, etc.)
+- Improve documentation and examples
+- Add support for new content types
+
+## Version History
+
+- **v1.2.0** (July 2025): Enhanced chunking, three-view interface, analytics integration
+- **v1.1.0** (July 2025): Search Influence branding, improved UI/UX
+- **v1.0.0** (July 2025): Initial release with core extraction functionality
 
 ## License
 
