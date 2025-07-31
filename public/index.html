@@ -603,28 +603,13 @@
         }
 
         .features {
-            display: flex;
-            flex-wrap: wrap;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
             gap: 30px;
             margin-top: 60px;
             padding: 60px 0;
             justify-content: space-between;
-        }
-
-        .feature {
-            flex: 1;
-            min-width: 300px;
-            max-width: calc(33.333% - 20px);
-        }
-
-        @media (max-width: 768px) {
-            .features {
-                flex-direction: column;
-            }
-            
-            .feature {
-                max-width: 100%;
-            }
         }
 
         .feature {
@@ -634,9 +619,19 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease;
-            flex: 1;
+            flex: 1 1 0% !important;
             min-width: 300px;
-            max-width: calc(33.333% - 20px);
+            max-width: calc(33.333% - 20px) !important;
+        }
+
+        @media (max-width: 768px) {
+            .features {
+                flex-direction: column !important;
+            }
+            
+            .feature {
+                max-width: 100% !important;
+            }
         }
 
         .feature:hover {
