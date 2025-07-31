@@ -15,6 +15,10 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --orange-accent: #e67e22;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #2c3e50;
@@ -112,6 +116,20 @@
 
         .header-description p {
             margin: 0;
+            margin-bottom: 15px;
+        }
+
+        .header-description a {
+            color: #e67e22;
+            text-decoration: underline;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .header-description a:hover {
+            color: #f39c12;
+            text-decoration: none;
         }
 
         .main-section {
@@ -717,6 +735,7 @@
                 </div>
                 <div class="header-description">
                     <p>AI-Powered content extraction and structuring tool for SEO research, content analysis, and data processing. Extract clean, organized chunks from any web page.</p>
+                    <a href="https://www.searchinfluence.com" target="_blank" rel="noopener noreferrer" style="color:var(--orange-accent);text-decoration:underline">Powered by Search Influence - AI SEO Experts</a>
                 </div>
             </div>
         </div>
