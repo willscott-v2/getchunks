@@ -603,7 +603,7 @@
 
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 30px;
             margin-top: 60px;
             padding: 60px 0;
@@ -636,6 +636,52 @@
         }
 
         .feature p {
+            color: #bdc3c7;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .faq-section {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 80px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .faq-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .faq-item h3 {
+            color: #e67e22;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .faq-item p {
             color: #bdc3c7;
             line-height: 1.6;
             font-size: 1rem;
@@ -716,6 +762,14 @@
 
             .features {
                 grid-template-columns: 1fr;
+            }
+
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .faq-section h2 {
+                font-size: 2rem;
             }
         }
     </style>
@@ -824,6 +878,30 @@
                 <div class="feature-icon">⚡</div>
                 <h3>Fast Serverless Processing</h3>
                 <p>Powered by edge computing for lightning-fast processing of any public web page without rate limits or infrastructure concerns.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-section">
+        <div class="container">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>Why use Web Content Chunker?</h3>
+                    <p>Web Content Chunker is designed for SEO professionals, content analysts, and researchers who need to extract clean, structured content from web pages. It automatically removes navigation, ads, and irrelevant elements while preserving the meaningful content hierarchy, making it perfect for content analysis, competitive research, and data processing workflows.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>How does the content extraction work?</h3>
+                    <p>Our AI-powered system analyzes the HTML structure of web pages to identify meaningful content based on heading hierarchy (H1, H2, H3, etc.), paragraph structure, and semantic relevance. It filters out navigation menus, advertisements, footers, and other non-content elements, then normalizes the remaining text by removing HTML tags and formatting to deliver clean, structured JSON output.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What types of websites can I extract from?</h3>
+                    <p>You can extract content from any publicly accessible website, including news articles, blog posts, documentation pages, product pages, and more. The tool works best with content-heavy pages that have clear heading structures and meaningful text content.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Is my data secure?</h3>
+                    <p>Yes, we prioritize data security. The content extraction process happens on our secure servers, and we don't store any extracted content or URLs. All processing is done in real-time and results are only displayed in your browser session.</p>
+                </div>
             </div>
         </div>
     </div>
