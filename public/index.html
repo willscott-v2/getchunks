@@ -609,6 +609,12 @@
             padding: 60px 0;
         }
 
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .feature {
             background: rgba(255, 255, 255, 0.05);
             padding: 40px;
@@ -758,10 +764,6 @@
 
             .chunk-title.level-2 {
                 font-size: 1.6rem;
-            }
-
-            .features {
-                grid-template-columns: 1fr;
             }
 
             .faq-grid {
