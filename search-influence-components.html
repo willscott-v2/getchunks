@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Influence Design System - Component Library</title>
+    <link rel="stylesheet" href="search-influence-design-system.css">
+    <style>
+        /* Demo page specific styles */
+        .demo-section {
+            margin: 40px 0;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .demo-title {
+            color: #e67e22;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .demo-description {
+            color: #bdc3c7;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .code-snippet {
+            background: #1e1e1e;
+            color: #e6e6e6;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Component Demo -->
+    <div class="si-header">
+        <div class="si-container">
+            <div class="si-header-content">
+                <div class="si-logo-section">
+                    <div class="si-logo-container">
+                        <a href="https://www.searchinfluence.com/" target="_blank" rel="noopener noreferrer">
+                            <img src="https://www.searchinfluence.com/wp-content/uploads/2025/03/si-logo.png" alt="Search Influence" class="si-logo">
+                        </a>
+                    </div>
+                    <h1 class="si-title">Your Project Title</h1>
+                    <div class="si-tagline">Your Compelling Tagline Here</div>
+                </div>
+                <div class="si-description">
+                    <p>Your project description goes here. Describe what your tool or service does and how it helps users achieve their goals.</p>
+                    <a href="https://www.searchinfluence.com" target="_blank" rel="noopener noreferrer">Powered by Search Influence - AI SEO Experts</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="si-section">
+        <div class="si-container">
+            <div class="demo-section">
+                <h2 class="demo-title">Search Influence Design System</h2>
+                <p class="demo-description">
+                    This is a complete design system extracted from the Web Content Chunker project. 
+                    It includes all the components, styles, and patterns that make up the polished look and feel.
+                </p>
+            </div>
+
+            <!-- Card Component Demo -->
+            <div class="demo-section">
+                <h3 class="demo-title">Card Component</h3>
+                <p class="demo-description">Elegant cards with glassmorphism effect and hover animations.</p>
+                
+                <div class="si-card">
+                    <form>
+                        <div class="si-form-group">
+                            <label class="si-label" for="demo-input">Input Field Example</label>
+                            <div class="si-input-group">
+                                <input type="text" id="demo-input" class="si-input" placeholder="Enter your text here">
+                                <button type="submit" class="si-btn">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="code-snippet">
+&lt;div class="si-card"&gt;
+    &lt;form&gt;
+        &lt;div class="si-form-group"&gt;
+            &lt;label class="si-label" for="input"&gt;Label&lt;/label&gt;
+            &lt;div class="si-input-group"&gt;
+                &lt;input type="text" class="si-input" placeholder="Placeholder"&gt;
+                &lt;button type="submit" class="si-btn"&gt;Submit&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/form&gt;
+&lt;/div&gt;
+                </div>
+            </div>
+
+            <!-- Button Component Demo -->
+            <div class="demo-section">
+                <h3 class="demo-title">Button Components</h3>
+                <p class="demo-description">Professional buttons with gradient backgrounds and hover effects.</p>
+                
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <button class="si-btn">Primary Button</button>
+                    <button class="si-btn" disabled>Disabled Button</button>
+                    <a href="#" class="si-btn">Link Button</a>
+                </div>
+
+                <div class="code-snippet">
+&lt;button class="si-btn"&gt;Primary Button&lt;/button&gt;
+&lt;button class="si-btn" disabled&gt;Disabled Button&lt;/button&gt;
+&lt;a href="#" class="si-btn"&gt;Link Button&lt;/a&gt;
+                </div>
+            </div>
+
+            <!-- Features Grid Demo -->
+            <div class="demo-section">
+                <h3 class="demo-title">Features Grid</h3>
+                <p class="demo-description">Three-column feature grid that stacks on mobile.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="si-features">
+        <div class="si-container">
+            <div class="si-feature">
+                <div class="si-feature-icon">🎯</div>
+                <h3>Feature One</h3>
+                <p>Description of your first feature. Explain how it benefits users and what problems it solves.</p>
+            </div>
+            <div class="si-feature">
+                <div class="si-feature-icon">🧹</div>
+                <h3>Feature Two</h3>
+                <p>Description of your second feature. Highlight the key benefits and use cases.</p>
+            </div>
+            <div class="si-feature">
+                <div class="si-feature-icon">⚡</div>
+                <h3>Feature Three</h3>
+                <p>Description of your third feature. Show how it completes your offering.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="si-section">
+        <div class="si-container">
+            <div class="code-snippet">
+&lt;div class="si-features"&gt;
+    &lt;div class="si-container"&gt;
+        &lt;div class="si-feature"&gt;
+            &lt;div class="si-feature-icon"&gt;🎯&lt;/div&gt;
+            &lt;h3&gt;Feature Title&lt;/h3&gt;
+            &lt;p&gt;Feature description...&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;!-- Repeat for more features --&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+            </div>
+
+            <!-- FAQ Section Demo -->
+            <div class="demo-section">
+                <h3 class="demo-title">FAQ Section</h3>
+                <p class="demo-description">Two-column FAQ grid with hover effects.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="si-faq-section">
+        <div class="si-container">
+            <h2>Frequently Asked Questions</h2>
+            <div class="si-faq-grid">
+                <div class="si-faq-item">
+                    <h3>Why choose this design system?</h3>
+                    <p>This design system provides a consistent, professional look that's perfect for SaaS tools and corporate applications. It's based on proven design patterns from Search Influence.</p>
+                </div>
+                <div class="si-faq-item">
+                    <h3>How do I implement it?</h3>
+                    <p>Simply include the CSS file and use the provided class names. All components are self-contained and easy to customize through CSS variables.</p>
+                </div>
+                <div class="si-faq-item">
+                    <h3>Is it responsive?</h3>
+                    <p>Yes, all components are fully responsive and work perfectly on desktop, tablet, and mobile devices with thoughtful breakpoints.</p>
+                </div>
+                <div class="si-faq-item">
+                    <h3>Can I customize the colors?</h3>
+                    <p>Absolutely! All colors are defined as CSS variables at the top of the stylesheet, making customization simple and consistent.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="si-section">
+        <div class="si-container">
+            <div class="code-snippet">
+&lt;div class="si-faq-section"&gt;
+    &lt;div class="si-container"&gt;
+        &lt;h2&gt;Frequently Asked Questions&lt;/h2&gt;
+        &lt;div class="si-faq-grid"&gt;
+            &lt;div class="si-faq-item"&gt;
+                &lt;h3&gt;Question?&lt;/h3&gt;
+                &lt;p&gt;Answer...&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;!-- Repeat for more questions --&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+            </div>
+
+            <!-- Loading Component Demo -->
+            <div class="demo-section">
+                <h3 class="demo-title">Loading Component</h3>
+                <p class="demo-description">Animated loading spinner for async operations.</p>
+                
+                <div class="si-loading">
+                    <div class="si-loading-spinner"></div>
+                    <h3>Loading...</h3>
+                    <p>Please wait while we process your request.</p>
+                </div>
+
+                <div class="code-snippet">
+&lt;div class="si-loading"&gt;
+    &lt;div class="si-loading-spinner"&gt;&lt;/div&gt;
+    &lt;h3&gt;Loading...&lt;/h3&gt;
+    &lt;p&gt;Please wait while we process your request.&lt;/p&gt;
+&lt;/div&gt;
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Component Demo -->
+    <div class="si-footer">
+        <div class="si-container">
+            <p>Built with the Search Influence Design System • <a href="https://github.com/your-repo" target="_blank">View Source</a> • Open Source & Free to Use</p>
+        </div>
+    </div>
+</body>
+</html>

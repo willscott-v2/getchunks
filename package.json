@@ -1,28 +1,39 @@
 {
-  "name": "getchunks",
-  "version": "1.2.0",
-  "description": "Web content chunker - extracts and structures content from web pages",
-  "main": "api/chunk.js",
-  "type": "module",
+  "name": "@search-influence/design-system",
+  "version": "1.0.0",
+  "description": "A professional design system based on the Search Influence brand, extracted from the Web Content Chunker project",
+  "main": "search-influence-design-system.css",
+  "files": [
+    "search-influence-design-system.css",
+    "search-influence-components.html",
+    "README-design-system.md",
+    "examples/"
+  ],
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step needed'",
-    "start": "vercel dev"
+    "serve": "python3 -m http.server 8080",
+    "demo": "open search-influence-components.html"
   },
   "keywords": [
-    "web-scraping",
-    "content-extraction",
-    "html-parsing",
-    "chunking"
+    "css",
+    "design-system",
+    "ui",
+    "components",
+    "search-influence",
+    "corporate",
+    "professional",
+    "responsive"
   ],
-  "author": "Will Scott",
-  "license": "ISC",
-  "dependencies": {
-    "@vercel/analytics": "^1.5.0",
-    "cheerio": "^1.1.2",
-    "node-fetch": "^3.3.2"
+  "author": "Search Influence",
+  "license": "MIT",
+  "homepage": "https://www.searchinfluence.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/search-influence/design-system"
   },
-  "devDependencies": {
-    "vercel": "^28.16.0"
-  }
+  "bugs": {
+    "url": "https://github.com/search-influence/design-system/issues"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {}
 }
