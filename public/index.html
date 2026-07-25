@@ -750,6 +750,155 @@
         .flag-chip.info { background: rgba(52, 144, 181, 0.1); border-color: rgba(52, 144, 181, 0.4); color: var(--info-blue); }
         .flag-chip.clean { background: rgba(36, 171, 89, 0.08); border-color: rgba(36, 171, 89, 0.45); color: var(--si-report-green); cursor: default; }
 
+        /* Retrieval simulator + coverage matrix (v3.4) */
+        .retrieval-panel p {
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+        }
+
+        .retrieval-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .retrieval-row input,
+        .retrieval-panel textarea {
+            flex: 1 1 300px;
+            background: var(--content-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--content-text);
+        }
+
+        .retrieval-panel textarea {
+            width: 100%;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+
+        .panel-btn {
+            background: var(--si-navy);
+            border: 1px solid var(--si-navy);
+            color: var(--white);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .panel-btn.secondary {
+            background: var(--content-bg);
+            border-color: var(--border-gray);
+            color: var(--secondary-content);
+        }
+
+        .retrieval-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .coverage-heading {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin: 24px 0 8px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-gray);
+        }
+
+        .retrieval-hit {
+            background: var(--content-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            font-size: 0.92rem;
+        }
+
+        .retrieval-hit.winner {
+            border-color: var(--si-report-green);
+            border-width: 2px;
+        }
+
+        .retrieval-hit-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .retrieval-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--si-medium-blue);
+            margin: 6px 0;
+        }
+
+        .retrieval-snippet {
+            color: var(--muted-text);
+            font-size: 0.88rem;
+        }
+
+        .retrieval-verdict {
+            margin: 8px 0 14px;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .coverage-table-wrap {
+            overflow-x: auto;
+            margin-top: 14px;
+        }
+
+        .coverage-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: var(--content-bg);
+        }
+
+        .coverage-table th,
+        .coverage-table td {
+            border: 1px solid var(--border-gray);
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .coverage-table th {
+            background: var(--background-gray);
+            font-weight: 700;
+        }
+
+        .cov-badge {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+
+        .cov-badge.covered { background: rgba(36, 171, 89, 0.1); border-color: rgba(36, 171, 89, 0.5); color: var(--si-report-green); }
+        .cov-badge.weak { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.55); color: #b45309; }
+        .cov-badge.gap { background: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.5); color: #c0392b; }
+
+        .coverage-summary {
+            margin-top: 12px;
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
         /* Pure-CSS tooltips — native title="" is unreliable (long hover delay,
            never shown in some embedded browsers), so hints render as a styled
            ::after that appears immediately on hover. */
@@ -2173,14 +2322,32 @@
                 URL.revokeObjectURL(url);
             });
 
-            // "Show only flagged" toggle — delegated because the Chunks view
-            // re-renders its HTML on every extraction
+            // Chunks-view controls — delegated because the view re-renders
+            // its HTML on every extraction
             chunksContent.addEventListener('click', function(e) {
-                const btn = e.target.closest('#flagged-filter');
-                if (!btn) return;
-                const on = chunksContent.classList.toggle('flags-only');
-                btn.classList.toggle('active', on);
-                btn.textContent = on ? 'Showing flagged chunks — show all' : 'Show only flagged chunks';
+                const filterBtn = e.target.closest('#flagged-filter');
+                if (filterBtn) {
+                    const on = chunksContent.classList.toggle('flags-only');
+                    filterBtn.classList.toggle('active', on);
+                    filterBtn.textContent = on ? 'Showing flagged chunks — show all' : 'Show only flagged chunks';
+                    return;
+                }
+                if (e.target.closest('#retrieval-run')) { runRetrievalTest(); return; }
+                if (e.target.closest('#coverage-run')) { runCoverage(); return; }
+                const csvBtn = e.target.closest('#copy-coverage-csv');
+                if (csvBtn) { copyToClipboard(coverageCsv(), csvBtn, 'Copied ✓'); return; }
+                const reportBtn = e.target.closest('#copy-report');
+                if (reportBtn && currentData) {
+                    trackEvent('report_copied');
+                    copyToClipboard(buildOptimizationReport(currentData), reportBtn, 'Copied ✓');
+                }
+            });
+
+            chunksContent.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target.id === 'retrieval-query') {
+                    e.preventDefault();
+                    runRetrievalTest();
+                }
             });
 
             // New extraction
@@ -2289,6 +2456,7 @@
             function displayChunksView(data) {
                 let html = '';
                 chunksContent.classList.remove('flags-only'); // fresh run, fresh filter
+                coverageRows = null; // coverage results belong to the previous page
 
                 // Collapsible legend (v3.2) — defines the vocabulary before the data
                 const tw = data.settings?.target_words;
@@ -2337,6 +2505,28 @@
                     }
                     html += `</div>`;
                     html += `<button type="button" id="flagged-filter" class="flagged-toggle">Show only flagged chunks</button>`;
+                    html += `</div>`;
+                }
+
+                // Retrieval simulator + coverage matrix (v3.4)
+                if (data.big_chunks && data.big_chunks.length) {
+                    html += `<div class="chunks-summary retrieval-panel">`;
+                    html += `<h3>🔎 Test retrieval</h3>`;
+                    html += `<p>Type what a searcher (or an AI assistant) would ask, and see which section wins — ranked with BM25, the same scoring family real retrieval systems use. Nothing leaves your browser.</p>`;
+                    html += `<div class="retrieval-row">`;
+                    html += `<input type="text" id="retrieval-query" placeholder="e.g. what does assisted living cost">`;
+                    html += `<button type="button" id="retrieval-run" class="panel-btn">Test query</button>`;
+                    html += `</div>`;
+                    html += `<div id="retrieval-results"></div>`;
+                    html += `<h4 class="coverage-heading">Coverage check</h4>`;
+                    html += `<p>Paste queries — one per line, from Search Console, keyword tools, or an Ontologizer fan-out — to see which are covered, weak, or missing entirely.</p>`;
+                    html += `<textarea id="coverage-queries" rows="5" placeholder="assisted living raleigh nc\nwhat does assisted living cost\nmemory care options"></textarea>`;
+                    html += `<div class="retrieval-actions">`;
+                    html += `<button type="button" id="coverage-run" class="panel-btn">Run coverage</button>`;
+                    html += `<button type="button" id="copy-coverage-csv" class="panel-btn secondary" hidden>Copy CSV</button>`;
+                    html += `<button type="button" id="copy-report" class="panel-btn secondary">Copy optimization report</button>`;
+                    html += `</div>`;
+                    html += `<div id="coverage-results"></div>`;
                     html += `</div>`;
                 }
 
@@ -2507,6 +2697,215 @@
                 }
 
                 chunksContent.innerHTML = html;
+            }
+
+            // --- Retrieval simulator (v3.4) — client-side BM25, no deps ----
+            let coverageRows = null; // last coverage run, feeds CSV + report
+
+            function bmStem(w) {
+                return w.length > 4 ? w.replace(/(ings|ing|ers|er|ies|ed|es|s)$/, '') : w.replace(/s$/, '');
+            }
+
+            function bm25Tokenize(text) {
+                return (text || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 2).map(bmStem);
+            }
+
+            // One doc per section (retrieval unit), heading indexed with it —
+            // the same shape the JSONL export feeds a real RAG pipeline.
+            function buildRetrievalDocs(data) {
+                const docs = [];
+                (data.big_chunks || []).forEach(bc => {
+                    (bc.small_chunks || []).forEach(sc => {
+                        const terms = bm25Tokenize(`${bc.title} ${sc.text}`);
+                        const tf = {};
+                        terms.forEach(t => { tf[t] = (tf[t] || 0) + 1; });
+                        docs.push({
+                            label: `Chunk ${bc.big_chunk_index} · section ${sc.chunk_index}`,
+                            title: bc.title,
+                            flags: bc.flags || [],
+                            text: sc.text,
+                            len: terms.length,
+                            tf,
+                        });
+                    });
+                });
+                return docs;
+            }
+
+            function bm25Search(docs, query) {
+                const qTerms = [...new Set(bm25Tokenize(query))];
+                if (!qTerms.length || !docs.length) return { qTerms, hits: [] };
+                const N = docs.length;
+                const avgLen = docs.reduce((s, d) => s + d.len, 0) / N || 1;
+                const k1 = 1.2, b = 0.75;
+                const df = {};
+                qTerms.forEach(q => { df[q] = docs.filter(d => d.tf[q]).length; });
+                const hits = docs.map(d => {
+                    let score = 0, matched = 0;
+                    qTerms.forEach(q => {
+                        const f = d.tf[q] || 0;
+                        if (!f) return;
+                        matched++;
+                        const idf = Math.log(1 + (N - df[q] + 0.5) / (df[q] + 0.5));
+                        score += idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * d.len / avgLen));
+                    });
+                    return { doc: d, score, matched };
+                }).filter(h => h.score > 0);
+                hits.sort((a, b2) => b2.score - a.score);
+                return { qTerms, hits };
+            }
+
+            function coverageStatus(hit, qTermCount) {
+                if (!hit || hit.score <= 0) return 'gap';
+                return hit.matched / qTermCount >= 0.6 ? 'covered' : 'weak';
+            }
+
+            function runRetrievalTest() {
+                const query = document.getElementById('retrieval-query')?.value.trim();
+                const out = document.getElementById('retrieval-results');
+                if (!query || !out || !currentData) return;
+                trackEvent('retrieval_tested');
+                const { qTerms, hits } = bm25Search(buildRetrievalDocs(currentData), query);
+                if (!hits.length) {
+                    out.innerHTML = `<div class="retrieval-verdict" style="color:#c0392b;">✗ No section matches this query — a content gap on this page.</div>`;
+                    return;
+                }
+                let html = '';
+                const top = hits.slice(0, 5);
+                const winner = top[0];
+                const highFlags = winner.doc.flags.filter(f => f.severity === 'high');
+                html += `<div class="retrieval-verdict" style="color:${highFlags.length ? '#b45309' : 'var(--si-report-green)'};">`;
+                html += highFlags.length
+                    ? `⚠ "${escapeHtml(winner.doc.label)}" wins but is flagged (${escapeHtml(highFlags.map(f => f.label).join(', '))}) — it may not stand alone when retrieved.`
+                    : `✓ "${escapeHtml(winner.doc.label)}" wins and has no high-severity flags.`;
+                html += `</div>`;
+                top.forEach((h, i) => {
+                    const width = Math.max(6, Math.round((h.score / winner.score) * 100));
+                    html += `<div class="retrieval-hit${i === 0 ? ' winner' : ''}">`;
+                    html += `<div class="retrieval-hit-head"><span>#${i + 1} ${escapeHtml(h.doc.label)} — ${escapeHtml(h.doc.title)}</span><span>${h.score.toFixed(2)} · ${h.matched}/${qTerms.length} terms</span></div>`;
+                    html += `<div class="retrieval-bar" style="width:${width}%;"></div>`;
+                    if (i === 0 && h.doc.flags.length) {
+                        html += `<div style="margin:6px 0;">${h.doc.flags.map(f => `<span class="flag-chip ${escapeHtml(f.severity)}" data-tip="${escapeHtml(`${f.message} Fix: ${f.fix}`)}">${escapeHtml(f.label)}</span>`).join(' ')}</div>`;
+                    }
+                    html += `<div class="retrieval-snippet">${escapeHtml(h.doc.text.slice(0, 160))}${h.doc.text.length > 160 ? '…' : ''}</div>`;
+                    html += `</div>`;
+                });
+                out.innerHTML = html;
+            }
+
+            function runCoverage() {
+                const box = document.getElementById('coverage-queries');
+                const out = document.getElementById('coverage-results');
+                if (!box || !out || !currentData) return;
+                const queries = box.value.split('\n').map(q => q.trim()).filter(Boolean);
+                if (!queries.length) return;
+                trackEvent('coverage_run', { queries: queries.length });
+                const docs = buildRetrievalDocs(currentData);
+                coverageRows = queries.map(query => {
+                    const { qTerms, hits } = bm25Search(docs, query);
+                    const best = hits[0] || null;
+                    const status = coverageStatus(best, qTerms.length || 1);
+                    return {
+                        query,
+                        status,
+                        bestLabel: best ? `${best.doc.label} — ${best.doc.title}` : null,
+                        score: best ? best.score.toFixed(2) : '0',
+                        matched: best ? `${best.matched}/${qTerms.length}` : `0/${qTerms.length}`,
+                    };
+                });
+                const counts = { covered: 0, weak: 0, gap: 0 };
+                coverageRows.forEach(r => counts[r.status]++);
+                let html = `<div class="coverage-table-wrap"><table class="coverage-table">`;
+                html += `<tr><th>Query</th><th>Status</th><th>Best section</th><th>Score</th><th>Terms</th></tr>`;
+                coverageRows.forEach(r => {
+                    html += `<tr><td>${escapeHtml(r.query)}</td>`;
+                    html += `<td><span class="cov-badge ${r.status}">${r.status}</span></td>`;
+                    html += `<td>${r.bestLabel ? escapeHtml(r.bestLabel) : '—'}</td>`;
+                    html += `<td>${escapeHtml(r.score)}</td><td>${escapeHtml(r.matched)}</td></tr>`;
+                });
+                html += `</table></div>`;
+                html += `<div class="coverage-summary">${counts.covered} covered · ${counts.weak} weak · ${counts.gap} ${counts.gap === 1 ? 'gap' : 'gaps'}</div>`;
+                out.innerHTML = html;
+                const csvBtn = document.getElementById('copy-coverage-csv');
+                if (csvBtn) csvBtn.hidden = false;
+            }
+
+            function csvField(value) {
+                const s = String(value ?? '');
+                return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+            }
+
+            function coverageCsv() {
+                const lines = ['query,status,best_section,score,matched_terms'];
+                (coverageRows || []).forEach(r => {
+                    lines.push([r.query, r.status, r.bestLabel || '', r.score, r.matched].map(csvField).join(','));
+                });
+                return lines.join('\n');
+            }
+
+            // Markdown export — the SEO-facing deliverable (JSON stays for devs)
+            function buildOptimizationReport(data) {
+                const md = (s) => String(s).replace(/\|/g, '\\|');
+                const lines = [];
+                lines.push(`# Chunk optimization report — ${data.source?.url || ''}`);
+                lines.push('');
+                lines.push('Generated by GetChunks. Deterministic analysis: the same page always produces the same results, so re-run after edits to verify the change. No AI involved.');
+                const ca = data.chunkability;
+                if (ca) {
+                    const flagged = data.big_chunks.filter(c => (c.flags || []).some(f => f.severity !== 'info')).length;
+                    lines.push('', `**Chunkability: ${ca.score}/100 (grade ${ca.grade})** — ${flagged} of ${data.big_chunks.length} chunks need work`);
+                    if (ca.top_fixes?.length) {
+                        lines.push('', '## Top fixes', '');
+                        ca.top_fixes.forEach((f, i) => {
+                            lines.push(`${i + 1}. **${f.label}${f.count > 1 ? ` (×${f.count})` : ''}** — ${f.fix}${f.points ? ` (up to +${f.points} pts)` : ''}`);
+                        });
+                    }
+                }
+                const groups = { high: [], warn: [], info: [] };
+                (data.big_chunks || []).forEach(bc => (bc.flags || []).forEach(f => groups[f.severity]?.push({ bc, f })));
+                [['high', 'Fix first'], ['warn', 'Then improve'], ['info', 'Worth knowing']].forEach(([sev, title]) => {
+                    if (!groups[sev].length) return;
+                    lines.push('', `## ${title}`, '');
+                    groups[sev].forEach(({ bc, f }) => {
+                        lines.push(`- **Chunk ${bc.big_chunk_index} "${bc.title}" — ${f.label}:** ${f.message} *Fix: ${f.fix}*`);
+                    });
+                });
+                if (coverageRows?.length) {
+                    lines.push('', `## Query coverage (${coverageRows.length} queries)`, '');
+                    lines.push('| Query | Status | Best section | Score | Terms |');
+                    lines.push('|---|---|---|---|---|');
+                    coverageRows.forEach(r => {
+                        lines.push(`| ${md(r.query)} | ${r.status} | ${r.bestLabel ? md(r.bestLabel) : '—'} | ${r.score} | ${r.matched} |`);
+                    });
+                    const gaps = coverageRows.filter(r => r.status === 'gap');
+                    if (gaps.length) {
+                        lines.push('', '### Content gaps', '');
+                        gaps.forEach(g => lines.push(`- "${g.query}" — no section on the page addresses this. Add one, or expand an existing section to cover it.`));
+                    }
+                }
+                if (data.settings) {
+                    lines.push('', `Settings: ${data.settings.chunk_size} chunks (${data.settings.target_words ? `${data.settings.target_words.min}–${data.settings.target_words.max} words` : ''}), ${data.settings.overlap_words}-word overlap, ${data.settings.strategy} strategy.`);
+                }
+                return lines.join('\n');
+            }
+
+            function copyToClipboard(text, btn, doneLabel) {
+                const restore = btn.textContent;
+                const done = () => {
+                    btn.textContent = doneLabel;
+                    setTimeout(() => { btn.textContent = restore; }, 1600);
+                };
+                if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(text).then(done);
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    done();
+                }
             }
 
             function escapeHtml(text) {
