@@ -649,6 +649,107 @@
             margin: 0;
         }
 
+        /* Chunkability score card + flag chips (v3.3) */
+        .chunkability-body {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .chunkability-score {
+            flex: 0 0 auto;
+            text-align: center;
+            padding: 18px 26px;
+            border-radius: 12px;
+            border: 2px solid;
+        }
+
+        .chunkability-score .score-number {
+            display: block;
+            font-size: 2.6rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .chunkability-score .score-grade {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .chunkability-score.band-good { border-color: var(--si-report-green); color: var(--si-report-green); background: rgba(36, 171, 89, 0.08); }
+        .chunkability-score.band-mid { border-color: #f59e0b; color: #b45309; background: rgba(245, 158, 11, 0.08); }
+        .chunkability-score.band-low { border-color: var(--error-red); color: var(--error-red); background: rgba(231, 76, 60, 0.08); }
+
+        .chunkability-fixes {
+            flex: 1 1 260px;
+        }
+
+        .chunkability-fixes h4 {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+            color: var(--secondary-content);
+        }
+
+        .chunkability-fixes ol {
+            margin: 0 0 0 20px;
+        }
+
+        .chunkability-fixes li {
+            margin-bottom: 8px;
+        }
+
+        .flagged-toggle {
+            margin-top: 18px;
+            background: var(--content-bg);
+            border: 1px solid var(--border-gray);
+            color: var(--secondary-content);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .flagged-toggle.active {
+            background: var(--si-navy);
+            border-color: var(--si-navy);
+            color: var(--white);
+        }
+
+        .flags-only .big-chunk:not(.has-flags) {
+            display: none;
+        }
+
+        .chunk-flags {
+            padding: 12px 30px;
+            background: var(--content-bg);
+            border-bottom: 1px solid var(--border-gray);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .flag-chip {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+            border: 1px solid;
+        }
+
+        .flag-chip.high { background: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.5); color: #c0392b; }
+        .flag-chip.warn { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.55); color: #b45309; }
+        .flag-chip.info { background: rgba(52, 144, 181, 0.1); border-color: rgba(52, 144, 181, 0.4); color: var(--info-blue); }
+        .flag-chip.clean { background: rgba(36, 171, 89, 0.08); border-color: rgba(36, 171, 89, 0.45); color: var(--si-report-green); cursor: default; }
+
         /* Pure-CSS tooltips — native title="" is unreliable (long hover delay,
            never shown in some embedded browsers), so hints render as a styled
            ::after that appears immediately on hover. */
@@ -2072,6 +2173,16 @@
                 URL.revokeObjectURL(url);
             });
 
+            // "Show only flagged" toggle — delegated because the Chunks view
+            // re-renders its HTML on every extraction
+            chunksContent.addEventListener('click', function(e) {
+                const btn = e.target.closest('#flagged-filter');
+                if (!btn) return;
+                const on = chunksContent.classList.toggle('flags-only');
+                btn.classList.toggle('active', on);
+                btn.textContent = on ? 'Showing flagged chunks — show all' : 'Show only flagged chunks';
+            });
+
             // New extraction
             document.getElementById('new-extraction').addEventListener('click', function() {
                 hideAll();
@@ -2177,6 +2288,7 @@
 
             function displayChunksView(data) {
                 let html = '';
+                chunksContent.classList.remove('flags-only'); // fresh run, fresh filter
 
                 // Collapsible legend (v3.2) — defines the vocabulary before the data
                 const tw = data.settings?.target_words;
@@ -2197,7 +2309,36 @@
                 if (overlapSetting > 0) {
                     html += `<li><strong><span class="overlap-badge" style="cursor:default;margin-right:0;">↔ overlap</span></strong> — the dimmed opening words repeat the end of the previous section on purpose (up to ${overlapSetting} words on this run). Standard RAG practice so a section still makes sense when retrieved alone — not duplicate content.</li>`;
                 }
+                if (data.chunkability) {
+                    html += `<li><strong>Chunkability</strong> — 0–100: every chunk starts at 100, loses points per flag, and the page score is the average. Fully deterministic — the same page always scores the same, so re-run after editing the page to see the delta.</li>`;
+                    html += `<li><strong>Flag chips</strong> — <span class="flag-chip high" style="cursor:default;">red</span> breaks standalone retrieval, <span class="flag-chip warn" style="cursor:default;">amber</span> weakens ranking or attribution, <span class="flag-chip info" style="cursor:default;">blue</span> informational. Hover any chip for the specific issue and its fix.</li>`;
+                }
                 html += `</ul></div></details>`;
+
+                // Chunkability score card (v3.3)
+                if (data.chunkability) {
+                    const ca = data.chunkability;
+                    const band = ca.score >= 80 ? 'good' : ca.score >= 60 ? 'mid' : 'low';
+                    const scoreTip = 'Deterministic 0–100 score: every chunk starts at 100, loses points for each flag it carries, and the page score is the average. No AI involved — edit the page, re-run, and the score moves for exactly the reasons shown.';
+                    html += `<div class="chunks-summary">`;
+                    html += `<h3>🎯 Chunkability</h3>`;
+                    html += `<div class="chunkability-body">`;
+                    html += `<div class="chunkability-score band-${band}" data-tip="${escapeHtml(scoreTip)}"><span class="score-number">${ca.score}</span><span class="score-grade">GRADE ${escapeHtml(ca.grade)}</span></div>`;
+                    if (ca.top_fixes && ca.top_fixes.length) {
+                        html += `<div class="chunkability-fixes"><h4>Top fixes</h4><ol>`;
+                        ca.top_fixes.forEach(f => {
+                            const times = f.count > 1 ? ` ×${f.count}` : '';
+                            const pts = f.points ? ` (up to +${f.points} pts)` : '';
+                            html += `<li><strong>${escapeHtml(f.label)}${times}:</strong> ${escapeHtml(f.fix)}${escapeHtml(pts)}</li>`;
+                        });
+                        html += `</ol></div>`;
+                    } else {
+                        html += `<div class="chunkability-fixes"><h4>Top fixes</h4><p>No structural issues found — this page chunks cleanly.</p></div>`;
+                    }
+                    html += `</div>`;
+                    html += `<button type="button" id="flagged-filter" class="flagged-toggle">Show only flagged chunks</button>`;
+                    html += `</div>`;
+                }
 
                 // Source metadata block (new in v3)
                 if (data.source) {
@@ -2251,7 +2392,8 @@
 
                 if (data.big_chunks && data.big_chunks.length > 0) {
                     data.big_chunks.forEach((chunk) => {
-                        html += `<div class="big-chunk">`;
+                        const flags = Array.isArray(chunk.flags) ? chunk.flags : [];
+                        html += `<div class="big-chunk${flags.length ? ' has-flags' : ''}">`;
 
                         // Big chunk header with metadata
                         html += `<div class="big-chunk-header">`;
@@ -2286,6 +2428,19 @@
                         if (chunk.fragment) tipParts.push(`anchor: ${chunk.fragment}`);
                         html += `<div class="big-chunk-meta tip-right" data-tip="${escapeHtml(tipParts.join(' • '))}">${metaText}</div>`;
                         html += `</div>`;
+
+                        // Flag chips (v3.3) — hover for the issue + fix
+                        if (data.chunkability) {
+                            html += `<div class="chunk-flags">`;
+                            if (flags.length) {
+                                flags.forEach(f => {
+                                    html += `<span class="flag-chip ${escapeHtml(f.severity)}" data-tip="${escapeHtml(`${f.message} Fix: ${f.fix}`)}">${escapeHtml(f.label)}</span>`;
+                                });
+                            } else {
+                                html += `<span class="flag-chip clean">✓ No flags</span>`;
+                            }
+                            html += `</div>`;
+                        }
 
                         // Small chunks container
                         html += `<div class="small-chunks-container">`;
