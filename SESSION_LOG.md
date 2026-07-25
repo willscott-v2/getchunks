@@ -25,10 +25,19 @@
 
 **Backlog cleanup:** `feature/enhanced-chunking` turned out to be already deleted (backlog item was stale); pruned leftover local tracking refs for the merged `chore/remove-dead-css` + `feature/marketing-shell-parity` branches. Branch list is now just main + the three chunk-quality branches.
 
+## 2026-07-25 (cont. 2) — Fixture/snapshot test suite (backlog item since v3.1) DONE
+
+Will approved the fresh-scope recommendation. `feature/fixture-tests` (stacked on v3.4), 30 tests green in ~0.6s via `npm test` (node:test, zero new deps):
+- **Named exports added** at the bottom of `api/chunk.js` for the test surface (runtime unaffected — Vercel only uses the default handler; verified API still healthy afterward).
+- `tests/chunking.test.js` — recursiveSplit (limit, word preservation, paragraph boundaries, force-split), mergeSmallChunks, addOverlap (prefix content, recorded count, the exact 29-word clamp case from Chuck's page, no-op paths), initialism, Flesch-Kincaid ordering.
+- `tests/analyzer.test.js` — one isolated scenario per flag (incl. single-word-heading skip, UWM initialism anchoring, near-duplicate counted once per pair, overlap-prefix exclusion), per-chunk-average score math (85/B case), determinism, empty→null. Gotcha found: synthetic filler words are accidentally polysyllabic → FK grade >12, so the "simple prose" case is hand-written.
+- `tests/fixture-snapshot.test.js` — two committed HTML fixtures run through the full offline pipeline (extractSourceMetadata → buildChunks → enhanceChunks → analyzeChunks, tokenizer 'estimate' so snapshots don't churn with gpt-tokenizer versions); full-result deep-equal vs committed `*.snapshot.json`; regenerate intentionally with `UPDATE_SNAPSHOTS=1 npm test`. `nested-sections.html` is the regression fixture for the v3.3 extraction fix (parent must not swallow child `<section>` content; explicit asserts + snapshot).
+- `.github/workflows/test.yml` — npm ci + npm test on PRs and main pushes, Node 22.
+- Note: `node --test tests/` (directory form) fails silently on Node 22.22 — script uses the `'tests/*.test.js'` glob.
+
 **Open at day's end:**
-1. **Merge chain awaiting Will:** #10 (v3.2, base main) → #11 (v3.3, retarget to main after #10) → #12 (v3.4, retarget after #11). Merging main auto-deploys.
-2. Fixture/snapshot tests (split/merge/overlap/analyzer) — deferred since v3.1, still the one real backlog item.
-3. Phase 4 optional: template query generator, `?queries=` Ontologizer deep-link, compare mode, README rubric docs.
+1. **Merge chain awaiting Will:** #10 (v3.2, base main) → #11 (v3.3) → #12 (v3.4) → #13 (tests) — retarget each to main as its base lands. Merging to main auto-deploys.
+2. Phase 4 optional: template query generator, `?queries=` Ontologizer deep-link, compare mode, README rubric docs.
 
 ## 2026-07-24 — Chunk Quality plan (from Chuck's feedback) + repo moved out of archive
 

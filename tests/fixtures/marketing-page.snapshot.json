@@ -1,0 +1,300 @@
+{
+  "source": {
+    "url": "https://maplegrove.example/assisted-living",
+    "title": "Assisted Living in Springfield - Maple Grove Senior Living",
+    "description": "Assisted living apartments, care plans, and amenities at Maple Grove Senior Living in Springfield.",
+    "canonical": "https://maplegrove.example/assisted-living",
+    "language": "en",
+    "opengraph": {
+      "site_name": "Maple Grove Senior Living"
+    },
+    "jsonld": [
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Maple Grove Senior Living",
+        "url": "https://maplegrove.example"
+      }
+    ],
+    "site": "Maple Grove Senior Living"
+  },
+  "warnings": [],
+  "big_chunks": [
+    {
+      "big_chunk_index": 1,
+      "title": "Assisted Living in Springfield",
+      "level": 1,
+      "heading_path": [
+        "Assisted Living in Springfield - Maple Grove Senior Living",
+        "Assisted Living in Springfield"
+      ],
+      "fragment": "#assisted-living-in-springfield",
+      "small_chunks": [
+        {
+          "text": "Assisted living at Maple Grove Senior Living gives Springfield seniors daily support without giving up independence. Residents keep their own apartments and routines. Licensed staff help with medication, bathing, and dressing whenever help is wanted. Families get a partner they can reach at any hour of the day.",
+          "content_type": "prose",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 48,
+          "char_count": 312,
+          "tokens": 36,
+          "token_estimate": 36,
+          "start_char": 0,
+          "end_char": 312,
+          "percent_through_doc": 0
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 48,
+        "total_characters": 312,
+        "total_tokens": 36,
+        "total_tokens_estimate": 36
+      },
+      "flags": [
+        {
+          "code": "thin-section",
+          "label": "Thin section",
+          "severity": "warn",
+          "message": "48 words of content — under 100 words a section rarely carries enough context to rank or be quoted on its own.",
+          "fix": "Merge or expand short sections."
+        }
+      ],
+      "chunk_score": 80
+    },
+    {
+      "big_chunk_index": 2,
+      "title": "Personalized Care Plans",
+      "level": 2,
+      "heading_path": [
+        "Assisted Living in Springfield - Maple Grove Senior Living",
+        "Assisted Living in Springfield",
+        "Personalized Care Plans"
+      ],
+      "fragment": "#personalized-care-plans",
+      "small_chunks": [
+        {
+          "text": "Our nurses write a care plan with each resident before move-in day. The plan covers medication schedules, mobility support, and personal goals. It is reviewed every ninety days with the family.",
+          "content_type": "prose",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 31,
+          "char_count": 193,
+          "tokens": 24,
+          "token_estimate": 24,
+          "start_char": 314,
+          "end_char": 507,
+          "percent_through_doc": 0.197
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 31,
+        "total_characters": 193,
+        "total_tokens": 24,
+        "total_tokens_estimate": 24
+      },
+      "flags": [
+        {
+          "code": "thin-section",
+          "label": "Thin section",
+          "severity": "warn",
+          "message": "31 words of content — under 100 words a section rarely carries enough context to rank or be quoted on its own.",
+          "fix": "Merge or expand short sections."
+        },
+        {
+          "code": "dangling-reference",
+          "label": "Dangling reference",
+          "severity": "high",
+          "message": "Opens with \"Our\" — retrieved on its own, nothing in this section says who or what that refers to.",
+          "fix": "Open sections with the entity name instead of a pronoun."
+        },
+        {
+          "code": "no-entity-anchor",
+          "label": "No entity anchor",
+          "severity": "warn",
+          "message": "Never mentions Maple Grove Senior Living (or any page-level entity term) — an AI quoting this section can't attribute it.",
+          "fix": "Name the brand or entity inside each section."
+        }
+      ],
+      "chunk_score": 25
+    },
+    {
+      "big_chunk_index": 3,
+      "title": "Overview",
+      "level": 2,
+      "heading_path": [
+        "Assisted Living in Springfield - Maple Grove Senior Living",
+        "Assisted Living in Springfield",
+        "Overview"
+      ],
+      "fragment": "#overview",
+      "small_chunks": [
+        {
+          "text": "Residents enjoy chef-prepared meals, weekly housekeeping, and a full calendar of outings around Springfield.",
+          "content_type": "prose",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 14,
+          "char_count": 108,
+          "tokens": 11,
+          "token_estimate": 11,
+          "start_char": 509,
+          "end_char": 617,
+          "percent_through_doc": 0.319
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 14,
+        "total_characters": 108,
+        "total_tokens": 11,
+        "total_tokens_estimate": 11
+      },
+      "flags": [
+        {
+          "code": "thin-section",
+          "label": "Thin section",
+          "severity": "warn",
+          "message": "14 words of content — under 100 words a section rarely carries enough context to rank or be quoted on its own.",
+          "fix": "Merge or expand short sections."
+        },
+        {
+          "code": "generic-heading",
+          "label": "Generic heading",
+          "severity": "warn",
+          "message": "\"Overview\" says nothing about the topic — as a retrieval label it matches almost any query weakly and none well.",
+          "fix": "Rename vague headings to name the topic."
+        }
+      ],
+      "chunk_score": 60
+    },
+    {
+      "big_chunk_index": 4,
+      "title": "Amenities at Maple Grove",
+      "level": 2,
+      "heading_path": [
+        "Assisted Living in Springfield - Maple Grove Senior Living",
+        "Assisted Living in Springfield",
+        "Amenities at Maple Grove"
+      ],
+      "fragment": "#amenities-at-maple-grove",
+      "small_chunks": [
+        {
+          "text": "- Chef-prepared meals served three times daily in the dining room\n- Weekly housekeeping and linen service for every apartment\n- Scheduled transportation to Springfield appointments and shopping\n- Secure courtyard garden with raised planting beds",
+          "content_type": "list",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 36,
+          "char_count": 245,
+          "tokens": 27,
+          "token_estimate": 27,
+          "start_char": 619,
+          "end_char": 864,
+          "percent_through_doc": 0.388
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 36,
+        "total_characters": 245,
+        "total_tokens": 27,
+        "total_tokens_estimate": 27
+      },
+      "flags": [
+        {
+          "code": "thin-section",
+          "label": "Thin section",
+          "severity": "warn",
+          "message": "36 words of content — under 100 words a section rarely carries enough context to rank or be quoted on its own.",
+          "fix": "Merge or expand short sections."
+        },
+        {
+          "code": "answer-buried",
+          "label": "Answer buried",
+          "severity": "warn",
+          "message": "The first sentence shares no content words with the heading \"Amenities at Maple Grove\" — the direct answer sits lower in the section, where ranking functions weight it less.",
+          "fix": "Answer the heading in the first sentence."
+        },
+        {
+          "code": "readability",
+          "label": "Hard to read",
+          "severity": "info",
+          "message": "Reads at ~grade 18.3 (Flesch-Kincaid). Long sentences make clean quoting harder.",
+          "fix": "Shorten sentences; prefer plain words."
+        }
+      ],
+      "chunk_score": 65
+    },
+    {
+      "big_chunk_index": 5,
+      "title": "Frequently Asked Questions About Cost",
+      "level": 2,
+      "heading_path": [
+        "Assisted Living in Springfield - Maple Grove Senior Living",
+        "Assisted Living in Springfield",
+        "Frequently Asked Questions About Cost"
+      ],
+      "fragment": "#frequently-asked-questions-about-cost",
+      "small_chunks": [
+        {
+          "text": "Maple Grove Senior Living charges one monthly fee that covers rent, meals, housekeeping, and scheduled transportation. Care services are billed in four levels, and our team reassesses the level with families each quarter. Most residents pay between four and six thousand dollars per month depending on apartment size and care level. Veterans benefits and long-term care insurance can offset part of the fee, and the billing office helps families file both. A refundable deposit holds an apartment for up to thirty days while a family decides. Respite stays are offered by the week when a caregiver needs a break, and those stays include the same meals, housekeeping, and care services that long-term residents receive every day.",
+          "content_type": "prose",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 116,
+          "char_count": 728,
+          "tokens": 87,
+          "token_estimate": 87,
+          "start_char": 866,
+          "end_char": 1594,
+          "percent_through_doc": 0.543
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 116,
+        "total_characters": 728,
+        "total_tokens": 87,
+        "total_tokens_estimate": 87
+      },
+      "flags": [
+        {
+          "code": "answer-buried",
+          "label": "Answer buried",
+          "severity": "warn",
+          "message": "The first sentence shares no content words with the heading \"Frequently Asked Questions About Cost\" — the direct answer sits lower in the section, where ranking functions weight it less.",
+          "fix": "Answer the heading in the first sentence."
+        }
+      ],
+      "chunk_score": 85
+    }
+  ],
+  "chunkability": {
+    "score": 63,
+    "grade": "D",
+    "top_fixes": [
+      {
+        "code": "thin-section",
+        "label": "Thin section",
+        "count": 4,
+        "points": 16,
+        "fix": "Merge or expand short sections."
+      },
+      {
+        "code": "answer-buried",
+        "label": "Answer buried",
+        "count": 2,
+        "points": 6,
+        "fix": "Answer the heading in the first sentence."
+      },
+      {
+        "code": "dangling-reference",
+        "label": "Dangling reference",
+        "count": 1,
+        "points": 6,
+        "fix": "Open sections with the entity name instead of a pronoun."
+      }
+    ]
+  }
+}

@@ -5,6 +5,7 @@
   "type": "module",
   "main": "api/chunk.js",
   "scripts": {
+    "test": "node --test 'tests/*.test.js'",
     "serve": "python3 -m http.server 8080",
     "demo": "open public/index.html"
   },
