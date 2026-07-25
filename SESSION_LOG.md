@@ -1,5 +1,19 @@
 # getchunks Session Log
 
+## 2026-07-25 — Phase 2 (v3.3): flags + Chunkability score, on `feature/chunk-quality-v3.3` (stacked on v3.2)
+
+**Trigger:** Will asked (twice) for the "actionable layer — now what?" after approving v3.2. That's Phase 2 of the approved plan; executed it.
+
+**API (`api/chunk.js`):** `analyzeChunks()` — pure/deterministic, zero AI. Per-chunk `flags[]` (code/label/severity/message/fix) + `chunk_score`, top-level `chunkability {score, grade, top_fixes}`. Flags: dangling-reference, near-duplicate (5-gram Jaccard ≥ 0.6 on de-overlapped text), no-entity-anchor (title+site+JSON-LD org names+H1, plus initialisms so "RAG" anchors "Retrieval-augmented generation"), thin-section (floor = min(target.min, 100)), oversized-section, generic-heading (~40 stoplist), answer-buried (needs ≥2 heading content words), readability (FK > 12, info-only). **Scoring model:** per-chunk 100-minus-flag-weights, page = average (flat deductions punished many-chunk pages — Wikipedia scored F). Weights: dangling/dupe 30, no-anchor 25, thin/oversized/generic 20, answer-buried 15.
+
+**Bonus root-cause fix:** the near-duplicate flag exposed the long-deferred nested-content extraction bug — containers wrapping nested `<section>`s were swallowed wholesale into the parent chunk (Wikipedia "Improvements" contained all of "Encoder"). Fixed in `stopCondition` (boundary when a container holds the next heading) + `extractContentPieces` (skip containers holding uncollected headings). That open item can come off the backlog.
+
+**UI:** score card (color-banded score+grade, top 3 fixes with "up to +N pts"), red/amber/info flag chips per chunk card with fix tooltips, green "✓ No flags" chip, "show only flagged" toggle, legend bullets for score + chips.
+
+**Tuning (5 pages):** Wikipedia RAG 79/C (control, highest ✓) · Liberty 73/C · seasidefl 68/D (answers Will's "it seems to chunk well" — 9 sections, all under 100 words) · SI home 65/D · Hayes (Chuck's page) 51/F with fixes "merge thin sections, replace pronoun openers, answer the heading first."
+
+**Next:** Will reviews v3.3 → then Phase 3 (v3.4): BM25 retrieval simulator, query coverage matrix, markdown optimization-report export.
+
 ## 2026-07-24 — Chunk Quality plan (from Chuck's feedback) + repo moved out of archive
 
 **Session ran from ontologizer-next; planning only, no code changes here yet.**

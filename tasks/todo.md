@@ -119,22 +119,22 @@ Branch: `feature/chunk-quality-v3.2`
 ### Phase 2 — Diagnosis (v3.3): flags + Chunkability score
 Branch: `feature/chunk-quality-v3.3`
 
-- [ ] `api/chunk.js`: new pure function `analyzeChunks(bigChunks, source, settings)` → per-chunk `flags[]` (`{code, severity, message, fix}`) + top-level `chunkability: {score, grade, top_fixes[]}`
-- [ ] Anchor-term set: tokenized page title + H1 + `og:site_name` + JSON-LD Organization/LocalBusiness names (all already captured in `source`)
-- [ ] Flags (all deterministic):
-  - [ ] `no-entity-anchor` — no anchor term appears in chunk text
-  - [ ] `dangling-reference` — chunk opens `^(Our|This|These|It|They|He|She)\b`
-  - [ ] `thin-section` — big chunk word count under target min
-  - [ ] `oversized-section` — big chunk over target max with no subheading
-  - [ ] `generic-heading` — heading in stoplist (~30 entries: "Why Choose Us", "Learn More", "Overview", …)
-  - [ ] `answer-buried` — zero stemmed content-word overlap between heading and first sentence
-  - [ ] `near-duplicate` — word 5-gram Jaccard ≥ 0.6 between chunk pair, after subtracting the known overlap prefix
-  - [ ] `readability` — Flesch-Kincaid grade per chunk (info-level, no score deduction initially)
-- [ ] Score: 100 minus weighted deductions; same input → same score (re-run after edits shows the delta)
-- [ ] UI: score card in `chunks-summary` (score + grade + top 3 fixes)
-- [ ] UI: color-coded flag chips on chunk cards (red/amber/info), each expanding to its one-line fix
-- [ ] UI: "show only flagged" filter toggle
-- [ ] Tune weights + stoplist against 5 real client pages before shipping
+- [x] `api/chunk.js`: new pure function `analyzeChunks(bigChunks, source, settings)` → per-chunk `flags[]` (`{code, label, severity, message, fix}`) + top-level `chunkability: {score, grade, top_fixes[]}`; also attaches `chunk_score` per chunk
+- [x] Anchor-term set: tokenized page title + H1 + `og:site_name` + JSON-LD Organization/LocalBusiness names — plus initialisms ("Retrieval-augmented generation" → "rag", "University of Wisconsin-Milwaukee" → "uwm") after tuning showed acronym-usage false positives
+- [x] Flags (all deterministic):
+  - [x] `no-entity-anchor` — no anchor term appears in chunk title+text
+  - [x] `dangling-reference` — chunk opens with a pronoun (`^(our|we|this|these|those|it|its|they|their|he|she)\b`)
+  - [x] `thin-section` — under `min(target.min, 100)` de-overlapped words (absolute 100w floor added in tuning: 500w min on "large" pages flagged every Wikipedia section)
+  - [x] `oversized-section` — over target max with no subheading
+  - [x] `generic-heading` — heading in ~40-entry stoplist
+  - [x] `answer-buried` — zero stemmed content-word overlap between heading and first sentence; requires ≥2 heading content words (single-word headings like "History" were pure noise)
+  - [x] `near-duplicate` — word 5-gram Jaccard ≥ 0.6 between de-overlapped chunk pairs. Caught a REAL extraction bug: containers wrapping nested sections were swallowed wholesale into the parent chunk (the long-deferred nested-content fix) — fixed in `extractContentPieces`/`stopCondition`, not muted in the analyzer
+  - [x] `readability` — Flesch-Kincaid per chunk, info-only flag when grade > 12, no deduction
+- [x] Score — reworked during tuning: flat per-instance deductions punished many-chunk pages, so each chunk starts at 100, loses its flags' weights (dangling/dupe 30, no-anchor 25, thin/oversized/generic 20, answer-buried 15), page score = average. Proportional by construction, per-chunk explainable, still deterministic
+- [x] UI: score card at top of Chunks view (score + grade color-banded, top 3 fixes with "up to +N pts")
+- [x] UI: color-coded flag chips on chunk cards (red/amber/info/green "No flags"), fix shown via the CSS tooltip
+- [x] UI: "show only flagged" filter toggle (delegated listener, resets per run)
+- [x] Tuned against 5 real pages: Wikipedia RAG 79/C (control, highest ✓), Liberty Senior Living 73/C, seasidefl.com 68/D (looks clean, but 9 sections all under 100w), SI home 65/D, Hayes Barton Place 51/F (Chuck's page, worst ✓)
 
 ### Phase 3 — Action (v3.4): retrieval simulator + report export
 Branch: `feature/chunk-quality-v3.4`

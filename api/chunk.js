@@ -247,6 +247,7 @@ async function chunkUrl(url, options) {
 
   const bigChunks = buildChunks($, finalOptions, warnings, source.title);
   const enhancedChunks = enhanceChunks(bigChunks, options.tokenizer);
+  const chunkability = analyzeChunks(enhancedChunks, source, finalOptions);
 
   return {
     big_chunks: enhancedChunks,
@@ -266,6 +267,7 @@ async function chunkUrl(url, options) {
       total_words: enhancedChunks.reduce((s, c) => s + c.metadata.total_words, 0),
       total_tokens: enhancedChunks.reduce((s, c) => s + c.metadata.total_tokens, 0),
     },
+    chunkability,
     warnings,
   };
 }
@@ -420,6 +422,10 @@ function buildChunks($, finalOptions, warnings, docTitle) {
       const stopCondition = (current) => {
         if (nextHeading && current[0] === nextHeading.element[0]) return true;
         if (current.is('h1, h2, h3, h4, h5, h6') && current[0] !== heading.element[0]) return true;
+        // A container wrapping the next heading (nested <section> markup) is
+        // the section boundary too — extracting its text wholesale would
+        // duplicate the child section's content into this chunk.
+        if (nextHeading && current.find('h1, h2, h3, h4, h5, h6').toArray().includes(nextHeading.element[0])) return true;
         return false;
       };
 
@@ -527,6 +533,12 @@ function extractContentPieces($, startElement, stopCondition) {
 
   while (current.length) {
     if (stopCondition(current)) break;
+    // Containers holding headings that never became chunks (nav/aside blocks,
+    // headings under 3 chars) would pollute this section's text — skip them.
+    if (current.find('h1, h2, h3, h4, h5, h6').length) {
+      current = current.next();
+      continue;
+    }
     let text = '';
     let type = 'prose';
 
@@ -723,6 +735,252 @@ function enhanceChunks(bigChunks, tokenizer) {
       },
     };
   });
+}
+
+// --- Chunk quality analysis (v3.3) -----------------------------------------
+// Deterministic diagnosis: same input, same score. No AI calls — regex, word
+// counts, stoplists, Jaccard shingles, and Flesch-Kincaid only.
+
+// Weights are per-chunk points: every chunk starts at 100, loses the weight
+// of each flag it carries, and the page score is the average across chunks —
+// proportional by construction, so a 12-chunk page with 2 flagged chunks
+// outscores a 4-chunk page with 2 flagged chunks.
+const FLAG_META = {
+  'dangling-reference': { label: 'Dangling reference', severity: 'high', weight: 30, fix: 'Open sections with the entity name instead of a pronoun.' },
+  'near-duplicate': { label: 'Near-duplicate', severity: 'high', weight: 30, fix: 'Consolidate near-identical sections or differentiate them.' },
+  'no-entity-anchor': { label: 'No entity anchor', severity: 'warn', weight: 25, fix: 'Name the brand or entity inside each section.' },
+  'generic-heading': { label: 'Generic heading', severity: 'warn', weight: 20, fix: 'Rename vague headings to name the topic.' },
+  'oversized-section': { label: 'Oversized section', severity: 'warn', weight: 20, fix: 'Break long sections up with subheadings.' },
+  'thin-section': { label: 'Thin section', severity: 'warn', weight: 20, fix: 'Merge or expand short sections.' },
+  'answer-buried': { label: 'Answer buried', severity: 'warn', weight: 15, fix: 'Answer the heading in the first sentence.' },
+  readability: { label: 'Hard to read', severity: 'info', weight: 0, fix: 'Shorten sentences; prefer plain words.' },
+};
+
+const GENERIC_HEADINGS = new Set([
+  'overview', 'introduction', 'intro', 'learn more', 'read more', 'more', 'more info',
+  'more information', 'additional information', 'details', 'why choose us', 'why us',
+  'our services', 'services', 'our approach', 'our story', 'our mission', 'about',
+  'about us', 'welcome', 'get started', 'getting started', 'features', 'benefits',
+  'faq', 'faqs', 'frequently asked questions', 'resources', 'conclusion', 'summary',
+  'next steps', 'contact', 'contact us', 'get in touch', 'our team', 'testimonials',
+  'gallery', 'miscellaneous', 'misc', 'other',
+]);
+
+const ANALYSIS_STOPWORDS = new Set(('a an the and or but if then else for nor so yet at by in of on to up as is are was were be been ' +
+  'being am do does did have has had will would can could may might must shall should with from into onto over under about after ' +
+  'before between during through above below out off again further once here there all any both each few most other some such no ' +
+  'not only own same than too very just more less much many what which who whom whose when where why how this that these those it ' +
+  'its they their them we our us you your yours he she his her i me my mine thing things page home welcome official website site online').split(' '));
+
+function tokenizeTerms(text) {
+  return (text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s'-]/g, ' ')
+    .split(/\s+/)
+    .map((w) => w.replace(/^['-]+|['-]+$/g, ''))
+    .filter((w) => w.length >= 3 && !ANALYSIS_STOPWORDS.has(w));
+}
+
+function lightStem(word) {
+  return word.length > 4
+    ? word.replace(/(ings|ing|ers|er|ies|ed|es|s)$/, '')
+    : word.replace(/s$/, '');
+}
+
+function stemSet(text) {
+  return new Set(tokenizeTerms(text).map(lightStem));
+}
+
+function setsIntersect(a, b) {
+  for (const item of a) if (b.has(item)) return true;
+  return false;
+}
+
+// Words prepended by addOverlap() are context carry-over, not page content —
+// every quality check runs on the de-overlapped text.
+function deOverlappedText(chunk) {
+  return chunk.small_chunks
+    .map((sc) => {
+      if (!sc.overlap_word_count) return sc.text;
+      return sc.text.trim().split(/\s+/).slice(sc.overlap_word_count).join(' ');
+    })
+    .join('\n\n');
+}
+
+function firstSentenceOf(text) {
+  const plain = text.replace(/^[->\s]+/, '').replace(/\s+/g, ' ').trim();
+  const match = plain.match(/^.*?[.!?](?=\s|$)/);
+  return (match ? match[0] : plain).trim();
+}
+
+// "University of Wisconsin-Milwaukee" → "uwm", "Retrieval-augmented
+// generation" → "rag" — pages routinely fall back to the initialism after
+// first mention, and that still anchors the entity.
+function initialism(name) {
+  const words = (name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/[\s-]+/)
+    .filter((w) => w && !ANALYSIS_STOPWORDS.has(w));
+  if (words.length < 2) return null;
+  const initials = words.map((w) => w[0]).join('');
+  return initials.length >= 3 ? initials : null;
+}
+
+function buildAnchorTerms(source, chunks) {
+  const titleMain = (source.title || '').split(/\s+[|–—-]\s+/)[0];
+  const names = [titleMain, source.site];
+  const jsonldNodes = (source.jsonld || []).flatMap((n) => (n && n['@graph'] ? n['@graph'] : [n]));
+  for (const node of jsonldNodes) {
+    if (!node || typeof node.name !== 'string') continue;
+    const types = [].concat(node['@type'] || []).join(' ');
+    if (/Organization|Business|WebSite|WebPage|Brand|Hotel|Store|Restaurant|Resort/i.test(types)) {
+      names.push(node.name);
+    }
+  }
+  const h1 = chunks.find((c) => c.level === 1);
+  if (h1) names.push(h1.title);
+
+  const anchors = stemSet(`${source.title || ''} ${names.join(' ')}`);
+  for (const name of names) {
+    const init = initialism(name);
+    if (init) anchors.add(init);
+  }
+  return anchors;
+}
+
+function countSyllables(word) {
+  const w = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+  const trimmed = w.replace(/(?:[^laeiouy]e|ed|es)$/, '');
+  const groups = trimmed.match(/[aeiouy]{1,2}/g);
+  return Math.max(1, groups ? groups.length : 1);
+}
+
+function fleschKincaidGrade(text) {
+  const words = text.split(/\s+/).filter((w) => /[a-zA-Z]/.test(w));
+  if (!words.length) return 0;
+  const sentences = Math.max(1, (text.match(/[.!?]+(?=\s|$)/g) || []).length);
+  const syllables = words.reduce((sum, w) => sum + countSyllables(w), 0);
+  const grade = 0.39 * (words.length / sentences) + 11.8 * (syllables / words.length) - 15.59;
+  return Math.round(grade * 10) / 10;
+}
+
+function wordShingles(text, size = 5) {
+  const words = tokenizeTerms(text).map(lightStem);
+  const set = new Set();
+  for (let i = 0; i + size <= words.length; i++) {
+    set.add(words.slice(i, i + size).join(' '));
+  }
+  return set;
+}
+
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let intersection = 0;
+  for (const item of a) if (b.has(item)) intersection++;
+  return intersection / (a.size + b.size - intersection);
+}
+
+// Attaches flags[] to each enhanced big chunk (mutates) and returns the
+// page-level chunkability verdict.
+function analyzeChunks(chunks, source, finalOptions) {
+  if (!chunks.length) return null;
+  const target = CHUNK_SIZES[finalOptions.chunkSize];
+  const anchorTerms = buildAnchorTerms(source, chunks);
+  const entityName = source.site || (chunks.find((c) => c.level === 1) || {}).title || 'the brand';
+  const tally = {};
+  const addFlag = (chunk, code, message) => {
+    const meta = FLAG_META[code];
+    chunk.flags.push({ code, label: meta.label, severity: meta.severity, message, fix: meta.fix });
+    tally[code] = (tally[code] || 0) + 1;
+  };
+
+  const texts = chunks.map((chunk) => deOverlappedText(chunk));
+
+  chunks.forEach((chunk, i) => {
+    chunk.flags = [];
+    const text = texts[i];
+    const wordCount = countWords(text);
+    const syntheticHeading = !chunk.fragment; // fixed-strategy fallback ("Main Content")
+
+    // Absolute floor, not the chunk-size minimum: a 300-word section on a
+    // "large"-sized page is still plenty to rank — under ~100 words it isn't.
+    const thinMin = Math.min(target.min, 100);
+    if (wordCount < thinMin) {
+      addFlag(chunk, 'thin-section', `${wordCount} words of content — under ${thinMin} words a section rarely carries enough context to rank or be quoted on its own.`);
+    } else if (wordCount > target.max) {
+      addFlag(chunk, 'oversized-section', `${wordCount} words under one heading (${finalOptions.chunkSize} max is ${target.max}). Retrieval had to split it mid-flow, so pieces lose their framing.`);
+    }
+
+    const normalizedTitle = (chunk.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const isGeneric = !syntheticHeading && GENERIC_HEADINGS.has(normalizedTitle);
+    if (isGeneric) {
+      addFlag(chunk, 'generic-heading', `"${chunk.title}" says nothing about the topic — as a retrieval label it matches almost any query weakly and none well.`);
+    }
+
+    const opening = (chunk.small_chunks[0]?.text || '').replace(/^[->\s]+/, '');
+    const pronounMatch = opening.match(/^(our|we|this|these|those|it|its|they|their|he|she)\b/i);
+    if (pronounMatch) {
+      addFlag(chunk, 'dangling-reference', `Opens with "${pronounMatch[1]}" — retrieved on its own, nothing in this section says who or what that refers to.`);
+    }
+
+    if (anchorTerms.size && !setsIntersect(stemSet(`${chunk.title} ${text}`), anchorTerms)) {
+      addFlag(chunk, 'no-entity-anchor', `Never mentions ${entityName} (or any page-level entity term) — an AI quoting this section can't attribute it.`);
+    }
+
+    if (!syntheticHeading && !isGeneric) {
+      const headingStems = stemSet(chunk.title);
+      const sentence = firstSentenceOf(text);
+      // Single-word headings ("History") make lexical-echo checks pure noise
+      if (headingStems.size >= 2 && sentence && !setsIntersect(headingStems, stemSet(sentence))) {
+        addFlag(chunk, 'answer-buried', `The first sentence shares no content words with the heading "${chunk.title}" — the direct answer sits lower in the section, where ranking functions weight it less.`);
+      }
+    }
+
+    if (wordCount >= 30) {
+      const grade = fleschKincaidGrade(text);
+      if (grade > 12) {
+        addFlag(chunk, 'readability', `Reads at ~grade ${grade} (Flesch-Kincaid). Long sentences make clean quoting harder.`);
+      }
+    }
+  });
+
+  const shingleSets = texts.map((t) => (countWords(t) >= 20 ? wordShingles(t) : null));
+  let duplicatePairs = 0;
+  for (let i = 0; i < chunks.length; i++) {
+    for (let j = i + 1; j < chunks.length; j++) {
+      if (!shingleSets[i] || !shingleSets[j]) continue;
+      const similarity = jaccard(shingleSets[i], shingleSets[j]);
+      if (similarity >= 0.6) {
+        duplicatePairs++;
+        const pct = `${Math.round(similarity * 100)}%`;
+        addFlag(chunks[i], 'near-duplicate', `${pct} similar to Chunk ${chunks[j].big_chunk_index} ("${chunks[j].title}") — retrieval returns them interchangeably, splitting relevance between them.`);
+        addFlag(chunks[j], 'near-duplicate', `${pct} similar to Chunk ${chunks[i].big_chunk_index} ("${chunks[i].title}") — retrieval returns them interchangeably, splitting relevance between them.`);
+      }
+    }
+  }
+
+  chunks.forEach((chunk) => {
+    const lost = chunk.flags.reduce((sum, f) => sum + FLAG_META[f.code].weight, 0);
+    chunk.chunk_score = Math.max(0, 100 - lost);
+  });
+  const score = Math.round(chunks.reduce((sum, c) => sum + c.chunk_score, 0) / chunks.length);
+
+  // Page-level points recoverable per flag type: weight × occurrences,
+  // averaged over the chunk count — the same math the score is built from.
+  const fixGroups = [];
+  for (const [code, meta] of Object.entries(FLAG_META)) {
+    const count = code === 'near-duplicate' ? duplicatePairs : (tally[code] || 0);
+    if (!count || !meta.weight) continue;
+    const points = Math.round((meta.weight * (tally[code] || 0)) / chunks.length);
+    fixGroups.push({ code, label: meta.label, count, points, fix: meta.fix });
+  }
+  fixGroups.sort((a, b) => b.points - a.points || b.count - a.count);
+
+  const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+  return { score, grade, top_fixes: fixGroups.slice(0, 3) };
 }
 
 // --- Format converters -----------------------------------------------------
