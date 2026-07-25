@@ -649,13 +649,55 @@
             margin: 0;
         }
 
+        /* Pure-CSS tooltips — native title="" is unreliable (long hover delay,
+           never shown in some embedded browsers), so hints render as a styled
+           ::after that appears immediately on hover. */
+        [data-tip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tip]::after {
+            content: attr(data-tip);
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            z-index: 30;
+            width: max-content;
+            max-width: 320px;
+            background: var(--si-dark-navy);
+            color: var(--white);
+            border: 1px solid var(--surface-slate-border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            line-height: 1.5;
+            white-space: normal;
+            text-align: left;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+        }
+
+        [data-tip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        [data-tip].tip-right::after {
+            left: auto;
+            right: 0;
+        }
+
         .big-chunk-breadcrumb {
             margin-top: 6px;
             font-size: 0.85rem;
             line-height: 1.4;
             color: rgba(255, 255, 255, 0.75);
             word-break: break-word;
-            cursor: help;
         }
 
         .big-chunk-breadcrumb .crumb-label {
@@ -679,11 +721,7 @@
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 500;
-            white-space: nowrap;
             max-width: 40%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: help;
         }
 
         @media (max-width: 640px) {
@@ -693,8 +731,6 @@
             }
             .big-chunk-meta {
                 max-width: 100%;
-                white-space: normal;
-                text-overflow: clip;
             }
         }
 
@@ -2227,7 +2263,7 @@
                         const showBreadcrumb = breadcrumb.length > 1 || (breadcrumb.length === 1 && breadcrumb[0] !== chunk.title);
                         if (showBreadcrumb) {
                             const crumbTip = 'Heading path — the parent headings above this chunk, starting with the page title. Stored with every section so a retrieval system knows where on the page the content came from.';
-                            html += `<div class="big-chunk-breadcrumb" title="${escapeHtml(crumbTip)}">`;
+                            html += `<div class="big-chunk-breadcrumb" data-tip="${escapeHtml(crumbTip)}">`;
                             html += `<span class="crumb-label">Path</span>`;
                             html += breadcrumb.map(p => escapeHtml(p)).join('<span class="crumb-sep">›</span>');
                             html += `</div>`;
@@ -2248,7 +2284,7 @@
                             tipParts.push(`${chunk.metadata.total_words} words`, `${tokens} tokens`);
                         }
                         if (chunk.fragment) tipParts.push(`anchor: ${chunk.fragment}`);
-                        html += `<div class="big-chunk-meta" title="${escapeHtml(tipParts.join(' • '))}">${metaText}</div>`;
+                        html += `<div class="big-chunk-meta tip-right" data-tip="${escapeHtml(tipParts.join(' • '))}">${metaText}</div>`;
                         html += `</div>`;
 
                         // Small chunks container
@@ -2273,7 +2309,7 @@
                                 const match = text.match(new RegExp(`^(?:\\S+\\s+){${overlapWords}}`));
                                 if (match) {
                                     const tip = `Repeated from the previous section on purpose (${overlapWords}-word overlap) so this section stands alone if retrieved by itself — not duplicate content.`;
-                                    html += `<span class="overlap-badge" title="${escapeHtml(tip)}">↔ ${overlapWords}w overlap</span>`;
+                                    html += `<span class="overlap-badge" data-tip="${escapeHtml(tip)}">↔ ${overlapWords}w overlap</span>`;
                                     html += `<span class="overlap-prefix" title="${escapeHtml(tip)}">${escapeHtml(match[0].trimEnd())}</span> `;
                                     body = text.slice(match[0].length);
                                 }
