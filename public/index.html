@@ -1523,9 +1523,11 @@
                         <label for="url-input">Website URL</label>
                         <div class="url-input-group">
                             <input
-                                type="url"
+                                type="text"
+                                inputmode="url"
+                                spellcheck="false"
                                 id="url-input"
-                                placeholder="https://example.com/article-or-page"
+                                placeholder="example.com/article-or-page"
                                 required
                                 autocomplete="url"
                             >
@@ -1864,8 +1866,10 @@
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
-                const url = urlInput.value.trim();
+                let url = urlInput.value.trim();
                 if (!url) return;
+                // Accept bare domains — default to https when no scheme given
+                if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) url = `https://${url}`;
 
                 // Get advanced options values
                 const chunkSize = chunkSizeSelect.value === 'auto' ? undefined : chunkSizeSelect.value;
