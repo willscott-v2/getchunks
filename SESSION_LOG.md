@@ -14,6 +14,22 @@
 
 **Next:** Will reviews v3.3 → then Phase 3 (v3.4): BM25 retrieval simulator, query coverage matrix, markdown optimization-report export.
 
+## 2026-07-25 (cont.) — Phase 3 (v3.4) executed; Chunk Quality plan COMPLETE
+
+**Will said "get through all the outstanding work."** Built v3.4 on `feature/chunk-quality-v3.4` (stacked on v3.3), PR #12:
+- Client-side BM25 (k1=1.2/b=0.75, no deps) over sections — heading indexed with text, overlap included, mirroring what the JSONL export feeds a real pipeline. All in-browser.
+- "Test retrieval" panel: single query → top-5 ranked sections with scores/bars/matched terms; winner highlighted with its flag chips and a stands-alone verdict (Hayes: "Chunk 2 · section 1 wins but is flagged (Dangling reference)").
+- Coverage check: one query per line → matrix (query / status / best section / score / terms), covered = ≥60% of query terms matched, weak, or gap. Summary counts + Copy CSV.
+- "Copy optimization report": markdown deliverable — score/grade, top fixes, flags grouped Fix first / Then improve / Worth knowing, coverage table, content-gaps list, settings. Verified via clipboard read in Playwright (Hayes: 4k chars, "dog boarding rates" correctly a gap, "cost per month" correctly weak).
+- State: coverageRows reset per extraction; all buttons delegated (view re-renders per run); Enter submits the single query.
+
+**Backlog cleanup:** `feature/enhanced-chunking` turned out to be already deleted (backlog item was stale); pruned leftover local tracking refs for the merged `chore/remove-dead-css` + `feature/marketing-shell-parity` branches. Branch list is now just main + the three chunk-quality branches.
+
+**Open at day's end:**
+1. **Merge chain awaiting Will:** #10 (v3.2, base main) → #11 (v3.3, retarget to main after #10) → #12 (v3.4, retarget after #11). Merging main auto-deploys.
+2. Fixture/snapshot tests (split/merge/overlap/analyzer) — deferred since v3.1, still the one real backlog item.
+3. Phase 4 optional: template query generator, `?queries=` Ontologizer deep-link, compare mode, README rubric docs.
+
 ## 2026-07-24 — Chunk Quality plan (from Chuck's feedback) + repo moved out of archive
 
 **Session ran from ontologizer-next; planning only, no code changes here yet.**

@@ -139,11 +139,11 @@ Branch: `feature/chunk-quality-v3.3`
 ### Phase 3 — Action (v3.4): retrieval simulator + report export
 Branch: `feature/chunk-quality-v3.4`
 
-- [ ] Client-side BM25 (~60 lines, no deps) over small chunks
-- [ ] "Test retrieval" panel: single question → ranked chunks with scores, winner highlighted with its flags shown (does the winning chunk stand alone?)
-- [ ] Multi-query textarea (one per line — from GSC, keyword tools, or an Ontologizer fan-out run) → coverage matrix: query → best chunk → score → covered / weak / gap
-- [ ] "Copy optimization report" — markdown export: URL, score, flags grouped by severity with specific edits, coverage gaps. This is the SEO-facing deliverable; JSON stays for devs
-- [ ] CSV copy for the coverage matrix
+- [x] Client-side BM25 (k1=1.2, b=0.75, ~50 lines, no deps) over sections (heading indexed with text, overlap included — same shape as the JSONL export)
+- [x] "Test retrieval" panel: single question → top 5 ranked sections with scores/bars/matched-terms, winner highlighted with its flag chips + stands-alone verdict ("wins but is flagged — may not stand alone")
+- [x] Multi-query textarea → coverage matrix: query → best section → score → covered (≥60% terms matched) / weak / gap (no match), with summary counts
+- [x] "Copy optimization report" — markdown export: URL, score/grade, top fixes, flags grouped Fix first / Then improve / Worth knowing with specific edits, coverage table + content gaps, settings line
+- [x] CSV copy for the coverage matrix (proper quoting)
 
 ### Phase 4 — Later / optional
 - [ ] Template query generator (entity × heading permutations) to prefill the simulator — zero-AI fan-out approximation
@@ -151,5 +151,10 @@ Branch: `feature/chunk-quality-v3.4`
 - [ ] Compare mode: re-run same URL, show score delta
 - [ ] Docs: README section explaining every flag and the score formula (determinism = explainability; publish the rubric)
 
-### Review
-_(fill in after execution)_
+### Review — all 3 phases executed 2026-07-24/25
+
+**Shipped (stacked PRs, merge in order):** #10 v3.2 (overlap labeling + legend + schemeless URLs + CSS tooltips) → #11 v3.3 (flags + Chunkability score + nested-extraction fix) → #12 v3.4 (BM25 simulator + coverage matrix + report export). Zero AI calls anywhere; everything deterministic and Playwright-verified against the Hayes Barton Place page Chuck screenshotted (51/F, 29w overlap labeled) plus seasidefl, SI home, Wikipedia RAG (79/C control), Liberty Senior Living.
+
+**Deviations from plan, all reasoned:** score model became per-chunk-average instead of flat deductions (proportionality); thin-section got an absolute 100w floor; anchor terms gained initialisms; answer-buried requires ≥2 heading content words; the near-duplicate flag surfaced the deferred nested-content extraction bug, fixed at the root in `extractContentPieces`/`stopCondition`.
+
+**Remaining backlog (not in this plan):** fixture/snapshot tests for split/merge/overlap/analyzer (deferred since v3.1); Phase 4 optional items (template query generator, `?queries=` deep-link from Ontologizer, compare mode, README rubric docs).
