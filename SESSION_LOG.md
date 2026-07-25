@@ -23,7 +23,7 @@
 - "Copy optimization report": markdown deliverable — score/grade, top fixes, flags grouped Fix first / Then improve / Worth knowing, coverage table, content-gaps list, settings. Verified via clipboard read in Playwright (Hayes: 4k chars, "dog boarding rates" correctly a gap, "cost per month" correctly weak).
 - State: coverageRows reset per extraction; all buttons delegated (view re-renders per run); Enter submits the single query.
 
-**Backlog cleanup:** deleted fully-merged `feature/enhanced-chunking` (local + origin).
+**Backlog cleanup:** `feature/enhanced-chunking` turned out to be already deleted (backlog item was stale); pruned leftover local tracking refs for the merged `chore/remove-dead-css` + `feature/marketing-shell-parity` branches. Branch list is now just main + the three chunk-quality branches.
 
 **Open at day's end:**
 1. **Merge chain awaiting Will:** #10 (v3.2, base main) → #11 (v3.3, retarget to main after #10) → #12 (v3.4, retarget after #11). Merging main auto-deploys.
