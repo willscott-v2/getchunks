@@ -101,3 +101,55 @@ Housekeeping:
 **Rate limiting — DONE (2026-07-21, via Vercel Firewall API):** Two additive custom rules live on prj_wOIeC5... (team will-scotts-projects, Pro). `chunk-rate-limit`: path pre `/api/chunk`, 20 req/60s/IP → deny. `feedback-rate-limit`: path pre `/api/feedback`, 5 req/600s/IP → deny. firewallEnabled=true, config version 2. Managed WAF ruleset untouched. Applied via `PATCH /v1/security/firewall/config` (rules.insert) after `vercel login` refresh; the CLI has no firewall command. To tune later: edit in the dashboard Firewall tab or re-PATCH.
 
 **Deferred:** fixture/snapshot tests for split/merge/overlap; nested-content extraction fix for the cheerio fallback path.
+
+## Plan: Chunk Quality upgrade (v3.2 → v3.4) — 2026-07-24
+
+**Origin:** Chuck Wilkins feedback — he couldn't interpret the Chunks view (mistook overlap for duplicate content, asked what "good" looks like and how to turn output into page optimizations). Goal: move the tool from "is this page chunkable?" to "here's what to change" — 100% deterministic, zero AI tokens.
+
+**Constraint:** all analysis is pure code (regex, word counts, stoplists, token overlap, BM25, Jaccard shingles, Flesch-Kincaid). No LLM calls anywhere.
+
+### Phase 1 — Comprehension (v3.2): make current output self-explanatory
+Branch: `feature/chunk-quality-v3.2`
+
+- [x] `api/chunk.js`: `addOverlap()` records `overlap_word_count` on each small chunk it modifies (words prepended from the previous chunk) — carried through `enhanceChunks()`; also added `settings.target_words` ({min,max,target}) so the UI reads size ranges live instead of mirroring `CHUNK_SIZES`
+- [x] UI: render the overlap prefix dimmed/underlined inside the section text, with a `↔ Nw overlap` badge + tooltip ("Repeated from the previous chunk on purpose so this chunk stands alone if retrieved by itself")
+- [x] UI: collapsible "How to read this" legend at the top of Chunks view — defines Chunk (heading section), L# (heading level), sections (retrieval units), w/t, target size ranges (pull live from `settings`), and overlap. Also swapped the Content Summary stat labels (big=Chunks, small=Sections) — they were reversed vs the chunk cards
+- [x] Smoke test on the Hayes Barton Place page (the exact page Chuck screenshotted) — Chunk 2 sec 2 reports `overlap_word_count: 29`, renders badged + dimmed; 7 overlap badges total (2w–35w). Playwright-verified. Plus 3 known URLs (searchinfluence.com, Wikipedia RAG article, getchunks itself): 0 prefix-regex mismatches, target_words tracks auto-detected size, zero-overlap case clean.
+
+### Phase 2 — Diagnosis (v3.3): flags + Chunkability score
+Branch: `feature/chunk-quality-v3.3`
+
+- [ ] `api/chunk.js`: new pure function `analyzeChunks(bigChunks, source, settings)` → per-chunk `flags[]` (`{code, severity, message, fix}`) + top-level `chunkability: {score, grade, top_fixes[]}`
+- [ ] Anchor-term set: tokenized page title + H1 + `og:site_name` + JSON-LD Organization/LocalBusiness names (all already captured in `source`)
+- [ ] Flags (all deterministic):
+  - [ ] `no-entity-anchor` — no anchor term appears in chunk text
+  - [ ] `dangling-reference` — chunk opens `^(Our|This|These|It|They|He|She)\b`
+  - [ ] `thin-section` — big chunk word count under target min
+  - [ ] `oversized-section` — big chunk over target max with no subheading
+  - [ ] `generic-heading` — heading in stoplist (~30 entries: "Why Choose Us", "Learn More", "Overview", …)
+  - [ ] `answer-buried` — zero stemmed content-word overlap between heading and first sentence
+  - [ ] `near-duplicate` — word 5-gram Jaccard ≥ 0.6 between chunk pair, after subtracting the known overlap prefix
+  - [ ] `readability` — Flesch-Kincaid grade per chunk (info-level, no score deduction initially)
+- [ ] Score: 100 minus weighted deductions; same input → same score (re-run after edits shows the delta)
+- [ ] UI: score card in `chunks-summary` (score + grade + top 3 fixes)
+- [ ] UI: color-coded flag chips on chunk cards (red/amber/info), each expanding to its one-line fix
+- [ ] UI: "show only flagged" filter toggle
+- [ ] Tune weights + stoplist against 5 real client pages before shipping
+
+### Phase 3 — Action (v3.4): retrieval simulator + report export
+Branch: `feature/chunk-quality-v3.4`
+
+- [ ] Client-side BM25 (~60 lines, no deps) over small chunks
+- [ ] "Test retrieval" panel: single question → ranked chunks with scores, winner highlighted with its flags shown (does the winning chunk stand alone?)
+- [ ] Multi-query textarea (one per line — from GSC, keyword tools, or an Ontologizer fan-out run) → coverage matrix: query → best chunk → score → covered / weak / gap
+- [ ] "Copy optimization report" — markdown export: URL, score, flags grouped by severity with specific edits, coverage gaps. This is the SEO-facing deliverable; JSON stays for devs
+- [ ] CSV copy for the coverage matrix
+
+### Phase 4 — Later / optional
+- [ ] Template query generator (entity × heading permutations) to prefill the simulator — zero-AI fan-out approximation
+- [ ] `?queries=` URL param so Ontologizer's fan-out tab can deep-link into the chunker
+- [ ] Compare mode: re-run same URL, show score delta
+- [ ] Docs: README section explaining every flag and the score formula (determinism = explainability; publish the rubric)
+
+### Review
+_(fill in after execution)_
