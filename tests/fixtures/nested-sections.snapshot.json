@@ -1,0 +1,157 @@
+{
+  "source": {
+    "url": "https://acme.example/engine-tuning",
+    "title": "Engine Tuning Handbook - Acme Rocket Supply",
+    "description": null,
+    "canonical": null,
+    "language": "en",
+    "opengraph": {
+      "site_name": "Acme Rocket Supply"
+    },
+    "site": "Acme Rocket Supply"
+  },
+  "warnings": [],
+  "big_chunks": [
+    {
+      "big_chunk_index": 1,
+      "title": "Improvements",
+      "level": 2,
+      "heading_path": [
+        "Engine Tuning Handbook - Acme Rocket Supply",
+        "Improvements"
+      ],
+      "fragment": "#improvements",
+      "small_chunks": [
+        {
+          "text": "Improvements to the base engine can be applied at three points in the assembly flow at Acme Rocket Supply.",
+          "content_type": "prose",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 19,
+          "char_count": 106,
+          "tokens": 15,
+          "token_estimate": 15,
+          "start_char": 0,
+          "end_char": 106,
+          "percent_through_doc": 0
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 19,
+        "total_characters": 106,
+        "total_tokens": 15,
+        "total_tokens_estimate": 15
+      },
+      "flags": [
+        {
+          "code": "thin-section",
+          "label": "Thin section",
+          "severity": "warn",
+          "message": "19 words of content — under 100 words a section rarely carries enough context to rank or be quoted on its own.",
+          "fix": "Merge or expand short sections."
+        }
+      ],
+      "chunk_score": 80
+    },
+    {
+      "big_chunk_index": 2,
+      "title": "Injector",
+      "level": 3,
+      "heading_path": [
+        "Engine Tuning Handbook - Acme Rocket Supply",
+        "Improvements",
+        "Injector"
+      ],
+      "fragment": "#injector",
+      "small_chunks": [
+        {
+          "text": "Injector upgrades swap the stock nozzle plate for a machined manifold. The machined manifold atomizes fuel into a finer spray, which burns more evenly across the chamber and lifts thrust by a measurable margin on the Acme Rocket Supply test stand.",
+          "content_type": "prose",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 41,
+          "char_count": 247,
+          "tokens": 31,
+          "token_estimate": 31,
+          "start_char": 108,
+          "end_char": 355,
+          "percent_through_doc": 0.19
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 41,
+        "total_characters": 247,
+        "total_tokens": 31,
+        "total_tokens_estimate": 31
+      },
+      "flags": [
+        {
+          "code": "thin-section",
+          "label": "Thin section",
+          "severity": "warn",
+          "message": "41 words of content — under 100 words a section rarely carries enough context to rank or be quoted on its own.",
+          "fix": "Merge or expand short sections."
+        }
+      ],
+      "chunk_score": 80
+    },
+    {
+      "big_chunk_index": 3,
+      "title": "Turbopump",
+      "level": 3,
+      "heading_path": [
+        "Engine Tuning Handbook - Acme Rocket Supply",
+        "Improvements",
+        "Turbopump"
+      ],
+      "fragment": "#turbopump",
+      "small_chunks": [
+        {
+          "text": "Turbopump balancing removes vibration at high spool speeds. Technicians spin each rotor on the balancing rig, add trim weights, and log the result before the pump returns to the Acme Rocket Supply assembly line.",
+          "content_type": "prose",
+          "overlap_word_count": 0,
+          "chunk_index": 1,
+          "word_count": 34,
+          "char_count": 211,
+          "tokens": 26,
+          "token_estimate": 26,
+          "start_char": 357,
+          "end_char": 568,
+          "percent_through_doc": 0.629
+        }
+      ],
+      "metadata": {
+        "total_small_chunks": 1,
+        "total_words": 34,
+        "total_characters": 211,
+        "total_tokens": 26,
+        "total_tokens_estimate": 26
+      },
+      "flags": [
+        {
+          "code": "thin-section",
+          "label": "Thin section",
+          "severity": "warn",
+          "message": "34 words of content — under 100 words a section rarely carries enough context to rank or be quoted on its own.",
+          "fix": "Merge or expand short sections."
+        }
+      ],
+      "chunk_score": 80
+    }
+  ],
+  "chunkability": {
+    "score": 80,
+    "grade": "B",
+    "top_fixes": [
+      {
+        "code": "thin-section",
+        "label": "Thin section",
+        "count": 3,
+        "points": 20,
+        "fix": "Merge or expand short sections."
+      }
+    ]
+  }
+}

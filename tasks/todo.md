@@ -157,4 +157,4 @@ Branch: `feature/chunk-quality-v3.4`
 
 **Deviations from plan, all reasoned:** score model became per-chunk-average instead of flat deductions (proportionality); thin-section got an absolute 100w floor; anchor terms gained initialisms; answer-buried requires ≥2 heading content words; the near-duplicate flag surfaced the deferred nested-content extraction bug, fixed at the root in `extractContentPieces`/`stopCondition`.
 
-**Remaining backlog (not in this plan):** fixture/snapshot tests for split/merge/overlap/analyzer (deferred since v3.1); Phase 4 optional items (template query generator, `?queries=` deep-link from Ontologizer, compare mode, README rubric docs).
+**Remaining backlog (not in this plan):** ~~fixture/snapshot tests for split/merge/overlap/analyzer~~ **DONE 2026-07-25** (PR #13: 30 node:test tests, 2 HTML fixtures + committed snapshots, nested-section regression coverage, CI workflow); Phase 4 optional items (template query generator, `?queries=` deep-link from Ontologizer, compare mode, README rubric docs).

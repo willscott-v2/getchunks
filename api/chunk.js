@@ -1095,3 +1095,19 @@ function slugify(text) {
     .replace(/\s+/g, '-')
     .slice(0, 64);
 }
+
+// Named exports for the test suite (tests/). Vercel only uses the default
+// handler; these change nothing at runtime.
+export {
+  CHUNK_SIZES,
+  countWords,
+  recursiveSplit,
+  mergeSmallChunks,
+  addOverlap,
+  buildChunks,
+  enhanceChunks,
+  analyzeChunks,
+  extractSourceMetadata,
+  initialism,
+  fleschKincaidGrade,
+};
