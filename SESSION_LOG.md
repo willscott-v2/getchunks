@@ -1,5 +1,24 @@
 # getchunks Session Log
 
+## 2026-07-24 — Chunk Quality plan (from Chuck's feedback) + repo moved out of archive
+
+**Session ran from ontologizer-next; planning only, no code changes here yet.**
+
+**Origin:** Chuck Wilkins Slack feedback — he couldn't interpret the Chunks view on the Hayes Barton Place assisted-living page and mistook the overlap prefix for duplicate content. Verified root cause: the sentence appears exactly once on the live page (`https://www.hayesbartonplace.com/bloomsbury-at-hayes-barton-place/assisted-living`); the "duplicate" is `addOverlap()` prepending the entire 29-word prior section because the overlap window (35w, 10% of medium target) exceeds the section length. `addOverlap()` doesn't record what it prepended, so the UI can't label it. Will's framing: keep everything deterministic — zero AI tokens.
+
+**Plan written (NOT yet executed):** "Chunk Quality upgrade (v3.2 → v3.4)" at the bottom of `tasks/todo.md`. Summary: v3.2 = overlap labeling + "how to read this" legend (needs `overlap_word_count` from the API); v3.3 = deterministic per-chunk flags (entity anchor, dangling reference, thin/oversized, generic heading, answer-buried, near-duplicate via Jaccard shingles, Flesch-Kincaid) + 0–100 Chunkability score; v3.4 = client-side BM25 retrieval simulator, paste-queries coverage matrix, markdown optimization-report export. Phase 4 parked: template query generator, `?queries=` deep-link from Ontologizer fan-out, compare mode.
+
+**Repo moved:** `~/Development/Development Archive/getchunks` → `~/Development/getchunks`. Git and Vercel unaffected (deploys from GitHub `searchinfluence/getchunks`). Working tree has exactly one modification: the plan appended to `tasks/todo.md`.
+
+**Next session:** get Will's approval on the plan, then branch `feature/chunk-quality-v3.2` off `main`. Smoke-test v3.2 against the Hayes Barton Place URL above (the exact page Chuck screenshotted).
+
+**2026-07-24 (cont.) — Phase 1 (v3.2) EXECUTED on `feature/chunk-quality-v3.2`, uncommitted, awaiting Will's review before PR:**
+- `api/chunk.js`: `addOverlap()` now records `overlap_word_count` per small chunk (carried through `enhanceChunks()`); `settings.target_words` ({min,max,target}) added so the UI reads size ranges live instead of mirroring `CHUNK_SIZES`.
+- `public/index.html`: overlap prefix rendered dimmed + dotted-underline with `↔ Nw overlap` badge and "intentional RAG carry-over" tooltip (UI splits the prefix with `^(?:\S+\s+){N}` against the reported count); collapsible "How to read this" legend at top of Chunks view (Chunk/L#/Sections/w-t/live size range/overlap); Content Summary stat labels swapped (they were reversed vs the chunk cards: big=Chunks, small=Sections).
+- Smoke-tested via `vercel dev --listen 3001` + Playwright: Hayes Barton Place Chunk 2 sec 2 = `overlap_word_count: 29`, renders badged/dimmed exactly as planned; 7 badges total (2w–35w). 3 more URLs (SI home, Wikipedia RAG, getchunks) — 0 prefix mismatches, no warnings, zero-overlap case clean. Screenshots in session scratchpad.
+- Will's review feedback, addressed same-branch: (1) tooltip on the chunk meta pill spelling out each part ("Chunk 1 of 4 on this page • starts at a level-2 heading (an <h2>) • …") + fixed "1 sections" plural; (2) breadcrumb now labeled "PATH" with a tooltip + legend bullet explaining it's the heading path (parent headings above the chunk, starting with the page title) stored for retrieval context. (3) His "actionable layer / score" ask = Phase 2 (v3.3 flags + Chunkability score) — confirmed as next.
+- More review feedback, same branch (PR #10): URL input now accepts bare domains (type="text" + inputmode="url", submit handler prepends https:// when schemeless; API validation untouched). Native title="" tooltips weren't showing for Will (help cursor but no tip — native titles need a long hover and never render in some embedded browsers), so replaced with a pure-CSS [data-tip] ::after tooltip component (instant, styled, .tip-right modifier for the meta pill; big-chunk-meta lost its overflow:hidden ellipsis so the pseudo-element isn't clipped). overlap-prefix keeps native title only — CSS tooltips don't position reliably on multi-line inline spans; the adjacent badge carries the working tooltip.
+
 ## 2026-07-21 (cont. 2) — Dead-CSS cleanup, cross-links, Ontologizer preview fix
 
 **getchunks dead-CSS cleanup (#9, merged):** Removed 235 lines of orphaned rules whose classes left the DOM in the marketing-shell rebuild (.header/.header-content/.logo-*/.tagline/.header-description/.main-section/.form-card/.features/.feature*/old .faq-*/.footer + their @media entries). Verified render pixel-identical at 1440px; `<style>` braces balanced 243/243. Auto-deployed.

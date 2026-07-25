@@ -254,6 +254,7 @@ async function chunkUrl(url, options) {
     settings: {
       strategy: finalOptions.strategy,
       chunk_size: finalOptions.chunkSize,
+      target_words: CHUNK_SIZES[finalOptions.chunkSize],
       overlap_words: finalOptions.overlap,
       extractor: extractorUsed,
       tokenizer: options.tokenizer,
@@ -657,8 +658,13 @@ function addOverlap(smallChunks, overlapWords) {
   for (let i = 0; i < smallChunks.length; i++) {
     if (i === 0) { result.push(smallChunks[i]); continue; }
     const prevWords = smallChunks[i - 1].text.trim().split(/\s+/);
-    const overlap = prevWords.slice(-Math.min(overlapWords, prevWords.length)).join(' ');
-    result.push({ ...smallChunks[i], text: `${overlap} ${smallChunks[i].text}` });
+    const overlapCount = Math.min(overlapWords, prevWords.length);
+    const overlap = prevWords.slice(-overlapCount).join(' ');
+    result.push({
+      ...smallChunks[i],
+      text: `${overlap} ${smallChunks[i].text}`,
+      overlap_word_count: overlapCount,
+    });
   }
   return result;
 }
@@ -685,6 +691,7 @@ function enhanceChunks(bigChunks, tokenizer) {
       return {
         text,
         content_type: sc.content_type || detectContentType(text),
+        overlap_word_count: sc.overlap_word_count || 0,
         chunk_index: idx + 1,
         word_count,
         char_count,

@@ -411,6 +411,64 @@
             font-weight: 600;
         }
 
+        .overlap-badge {
+            display: inline-block;
+            background: rgba(52, 144, 181, 0.1);
+            border: 1px solid rgba(52, 144, 181, 0.4);
+            color: var(--info-blue);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 8px;
+            white-space: nowrap;
+            cursor: help;
+        }
+
+        .overlap-prefix {
+            color: var(--muted-text);
+            background: rgba(52, 144, 181, 0.07);
+            border-bottom: 1px dotted var(--dark-gray);
+            cursor: help;
+        }
+
+        .chunks-legend {
+            background: var(--background-gray);
+            border: 1px solid var(--border-gray);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            color: var(--content-text);
+        }
+
+        .chunks-legend summary {
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 16px 30px;
+            list-style-position: inside;
+        }
+
+        .chunks-legend[open] summary {
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .chunks-legend-body {
+            padding: 20px 30px;
+            font-size: 0.95rem;
+        }
+
+        .chunks-legend-body p {
+            margin-bottom: 12px;
+        }
+
+        .chunks-legend-body ul {
+            margin: 0 0 0 20px;
+        }
+
+        .chunks-legend-body li {
+            margin-bottom: 8px;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -591,12 +649,64 @@
             margin: 0;
         }
 
+        /* Pure-CSS tooltips — native title="" is unreliable (long hover delay,
+           never shown in some embedded browsers), so hints render as a styled
+           ::after that appears immediately on hover. */
+        [data-tip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tip]::after {
+            content: attr(data-tip);
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            z-index: 30;
+            width: max-content;
+            max-width: 320px;
+            background: var(--si-dark-navy);
+            color: var(--white);
+            border: 1px solid var(--surface-slate-border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            line-height: 1.5;
+            white-space: normal;
+            text-align: left;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+        }
+
+        [data-tip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        [data-tip].tip-right::after {
+            left: auto;
+            right: 0;
+        }
+
         .big-chunk-breadcrumb {
             margin-top: 6px;
             font-size: 0.85rem;
             line-height: 1.4;
             color: rgba(255, 255, 255, 0.75);
             word-break: break-word;
+        }
+
+        .big-chunk-breadcrumb .crumb-label {
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.7rem;
+            font-weight: 700;
+            opacity: 0.6;
+            margin-right: 6px;
         }
 
         .big-chunk-breadcrumb .crumb-sep {
@@ -611,10 +721,7 @@
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 500;
-            white-space: nowrap;
             max-width: 40%;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         @media (max-width: 640px) {
@@ -624,8 +731,6 @@
             }
             .big-chunk-meta {
                 max-width: 100%;
-                white-space: normal;
-                text-overflow: clip;
             }
         }
 
@@ -1454,9 +1559,11 @@
                         <label for="url-input">Website URL</label>
                         <div class="url-input-group">
                             <input
-                                type="url"
+                                type="text"
+                                inputmode="url"
+                                spellcheck="false"
                                 id="url-input"
-                                placeholder="https://example.com/article-or-page"
+                                placeholder="example.com/article-or-page"
                                 required
                                 autocomplete="url"
                             >
@@ -1795,8 +1902,10 @@
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
-                const url = urlInput.value.trim();
+                let url = urlInput.value.trim();
                 if (!url) return;
+                // Accept bare domains — default to https when no scheme given
+                if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) url = `https://${url}`;
 
                 // Get advanced options values
                 const chunkSize = chunkSizeSelect.value === 'auto' ? undefined : chunkSizeSelect.value;
@@ -2069,6 +2178,27 @@
             function displayChunksView(data) {
                 let html = '';
 
+                // Collapsible legend (v3.2) — defines the vocabulary before the data
+                const tw = data.settings?.target_words;
+                const overlapSetting = data.settings?.overlap_words || 0;
+                html += `<details class="chunks-legend">`;
+                html += `<summary>ℹ️ How to read this</summary>`;
+                html += `<div class="chunks-legend-body">`;
+                html += `<p>This view shows the page the way a retrieval system (RAG, AI search) stores it: split into standalone pieces it can fetch one at a time.</p>`;
+                html += `<ul>`;
+                html += `<li><strong>Chunk</strong> — one heading section of the page: a heading plus its content, up to the next heading.</li>`;
+                html += `<li><strong>L#</strong> — that heading's level. L2 = an &lt;h2&gt;.</li>`;
+                html += `<li><strong>Path</strong> — the breadcrumb under a chunk title: the parent headings above it, starting with the page title. Retrieval systems store it so a fetched section keeps its page context.</li>`;
+                html += `<li><strong>Sections</strong> — the numbered retrieval units inside a chunk. This is what a search or AI system actually fetches and quotes.</li>`;
+                html += `<li><strong>w / t</strong> — word count / token count (tokens are how AI models measure text).</li>`;
+                if (tw) {
+                    html += `<li><strong>Section size</strong> — this run aims for ${tw.min}–${tw.max} words per section (${escapeHtml(String(data.settings.chunk_size))}, target ${tw.target}).</li>`;
+                }
+                if (overlapSetting > 0) {
+                    html += `<li><strong><span class="overlap-badge" style="cursor:default;margin-right:0;">↔ overlap</span></strong> — the dimmed opening words repeat the end of the previous section on purpose (up to ${overlapSetting} words on this run). Standard RAG practice so a section still makes sense when retrieved alone — not duplicate content.</li>`;
+                }
+                html += `</ul></div></details>`;
+
                 // Source metadata block (new in v3)
                 if (data.source) {
                     const s = data.source;
@@ -2099,8 +2229,8 @@
                     html += `<div class="chunks-summary">`;
                     html += `<h3>📊 Content Summary</h3>`;
                     html += `<div class="summary-stats">`;
-                    html += `<div class="stat"><strong>${data.summary.total_big_chunks}</strong> Sections</div>`;
-                    html += `<div class="stat"><strong>${data.summary.total_small_chunks}</strong> Chunks</div>`;
+                    html += `<div class="stat"><strong>${data.summary.total_big_chunks}</strong> Chunks</div>`;
+                    html += `<div class="stat"><strong>${data.summary.total_small_chunks}</strong> Sections</div>`;
                     html += `<div class="stat"><strong>${data.summary.total_words.toLocaleString()}</strong> Words</div>`;
                     html += `<div class="stat"><strong>${tokens.toLocaleString()}</strong> Tokens</div>`;
                     html += `</div>`;
@@ -2132,19 +2262,29 @@
                         const breadcrumb = Array.isArray(chunk.heading_path) ? chunk.heading_path : [];
                         const showBreadcrumb = breadcrumb.length > 1 || (breadcrumb.length === 1 && breadcrumb[0] !== chunk.title);
                         if (showBreadcrumb) {
-                            html += `<div class="big-chunk-breadcrumb">`;
+                            const crumbTip = 'Heading path — the parent headings above this chunk, starting with the page title. Stored with every section so a retrieval system knows where on the page the content came from.';
+                            html += `<div class="big-chunk-breadcrumb" data-tip="${escapeHtml(crumbTip)}">`;
+                            html += `<span class="crumb-label">Path</span>`;
                             html += breadcrumb.map(p => escapeHtml(p)).join('<span class="crumb-sep">›</span>');
                             html += `</div>`;
                         }
                         html += `</div>`;
 
                         const tokens = chunk.metadata?.total_tokens ?? chunk.metadata?.total_tokens_estimate;
-                        let metaText = `Chunk ${chunk.big_chunk_index} • L${chunk.level} • ${chunk.small_chunks.length} sections`;
+                        const secCount = chunk.small_chunks.length;
+                        const secLabel = `section${secCount === 1 ? '' : 's'}`;
+                        let metaText = `Chunk ${chunk.big_chunk_index} • L${chunk.level} • ${secCount} ${secLabel}`;
+                        const tipParts = [
+                            `Chunk ${chunk.big_chunk_index} of ${data.big_chunks.length} on this page`,
+                            `starts at a level-${chunk.level} heading (an <h${chunk.level}>)`,
+                            `${secCount} retrieval ${secLabel}`,
+                        ];
                         if (chunk.metadata) {
                             metaText += ` • ${chunk.metadata.total_words}w • ${tokens}t`;
+                            tipParts.push(`${chunk.metadata.total_words} words`, `${tokens} tokens`);
                         }
-                        const metaTitle = chunk.fragment ? ` title="${escapeHtml(chunk.fragment)}"` : '';
-                        html += `<div class="big-chunk-meta"${metaTitle}>${metaText}</div>`;
+                        if (chunk.fragment) tipParts.push(`anchor: ${chunk.fragment}`);
+                        html += `<div class="big-chunk-meta tip-right" data-tip="${escapeHtml(tipParts.join(' • '))}">${metaText}</div>`;
                         html += `</div>`;
 
                         // Small chunks container
@@ -2154,26 +2294,42 @@
                             const wordCount = smallChunk.word_count;
                             const tokens = smallChunk.tokens ?? smallChunk.token_estimate;
                             const contentType = smallChunk.content_type;
+                            const overlapWords = smallChunk.overlap_word_count || 0;
 
                             html += `<div class="small-chunk">`;
                             html += `<div class="small-chunk-index">${smallIndex + 1}</div>`;
                             html += `<div class="small-chunk-content">`;
 
-                            if (text.startsWith('- ')) {
-                                const listItems = text.split('\n').map(item => {
+                            // Overlap prefix (v3.2): the API prepends the tail of the
+                            // previous section and reports how many words it added.
+                            // Render that prefix dimmed + labeled so it doesn't read
+                            // as duplicate content.
+                            let body = text;
+                            if (overlapWords > 0) {
+                                const match = text.match(new RegExp(`^(?:\\S+\\s+){${overlapWords}}`));
+                                if (match) {
+                                    const tip = `Repeated from the previous section on purpose (${overlapWords}-word overlap) so this section stands alone if retrieved by itself — not duplicate content.`;
+                                    html += `<span class="overlap-badge" data-tip="${escapeHtml(tip)}">↔ ${overlapWords}w overlap</span>`;
+                                    html += `<span class="overlap-prefix" title="${escapeHtml(tip)}">${escapeHtml(match[0].trimEnd())}</span> `;
+                                    body = text.slice(match[0].length);
+                                }
+                            }
+
+                            if (body.startsWith('- ')) {
+                                const listItems = body.split('\n').map(item => {
                                     if (item.startsWith('- ')) {
                                         return `<li>${escapeHtml(item.substring(2))}</li>`;
                                     }
                                     return '';
                                 }).filter(Boolean).join('');
                                 html += `<ul>${listItems}</ul>`;
-                            } else if (text.startsWith('> ')) {
-                                html += `<blockquote>${escapeHtml(text.substring(2))}</blockquote>`;
-                            } else if (text.startsWith('```')) {
-                                const code = text.replace(/```\n?/g, '');
+                            } else if (body.startsWith('> ')) {
+                                html += `<blockquote>${escapeHtml(body.substring(2))}</blockquote>`;
+                            } else if (body.startsWith('```')) {
+                                const code = body.replace(/```\n?/g, '');
                                 html += `<pre><code>${escapeHtml(code)}</code></pre>`;
                             } else {
-                                html += escapeHtml(text);
+                                html += escapeHtml(body);
                             }
 
                             if (wordCount || tokens || contentType) {
